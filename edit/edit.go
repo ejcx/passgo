@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 
 	"golang.org/x/crypto/nacl/box"
 
@@ -95,11 +94,7 @@ func reencrypt(s pio.SiteInfo, newPass string) pio.SiteInfo {
 	if err != nil {
 		log.Fatalf("Could not get config file name: %s", err.Error())
 	}
-	f, err := os.Open(config)
-	if err != nil {
-		log.Fatalf("Could not open config file for reencrypt: %s", err.Error())
-	}
-	configContents, err := ioutil.ReadAll(f)
+	configContents, err := ioutil.ReadFile(config)
 	if err != nil {
 		log.Fatalf("Could not read contents of config: %s", err.Error())
 	}

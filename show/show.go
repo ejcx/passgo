@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/ejcx/passgo/pc"
@@ -31,6 +32,14 @@ const (
 	// match that contain the searchFor string
 	Search
 )
+
+func init() {
+	/* Windows doesn't work with ambiguous width characters */
+	if runtime.GOOS == "windows" {
+		lastPrefix = "+--"
+		regPrefix = "+--"
+	}
+}
 
 func handleErrors(allErrors []error) {
 	errorStr := "Error"
@@ -130,13 +139,11 @@ func SearchAll(st searchType, searchFor string) (allSites map[string][]pio.SiteI
 		log.Fatalf("Could not get site file: %s", err.Error())
 	}
 
-	f, err := os.Open(siteFile)
+	siteFileContents, err := ioutil.ReadFile(siteFile)
 	if err != nil {
-		log.Fatalf("Could not open site file: %s", err.Error())
-	}
-
-	siteFileContents, err := ioutil.ReadAll(f)
-	if err != nil {
+		if os.IsNotExist(err) {
+			log.Fatalf("Could not open site file. Run passgo init.: %s", err.Error())
+		}
 		log.Fatalf("Could not read site file contents: %s", err.Error())
 	}
 

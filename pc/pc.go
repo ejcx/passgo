@@ -11,7 +11,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/ejcx/passgo/pio"
 	"golang.org/x/crypto/nacl/box"
@@ -128,9 +127,8 @@ func GetMasterKey() (masterPrivKey [32]byte) {
 		log.Fatalf("Could not get config file: %s", err.Error())
 	}
 
-	cf, err := os.Open(c)
 	var configFile pio.ConfigFile
-	configFileBytes, err := ioutil.ReadAll(cf)
+	configFileBytes, err := ioutil.ReadFile(c)
 	if err != nil {
 		log.Fatalf("Could not read config file: %s", err.Error())
 	}

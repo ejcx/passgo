@@ -38,8 +38,8 @@ func Initialize() {
 	if err != nil {
 		log.Fatalf("Could not initialize git repo: %s", err.Error())
 	}
-	configFile := pio.ConfigFileName[1:]
-	siteFile := pio.SiteFileName[1:]
+	configFile := pio.ConfigFileName
+	siteFile := pio.SiteFileName
 	_, err = exec.Command("git", "add", configFile).Output()
 	if err != nil {
 		log.Fatalf("Could not add %s: %s", configFile, err.Error())
