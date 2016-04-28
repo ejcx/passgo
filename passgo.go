@@ -13,6 +13,7 @@ import (
 	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/show"
 	"github.com/ejcx/passgo/sync"
+	"github.com/ejcx/passgo/copy"
 )
 
 var (
@@ -33,7 +34,7 @@ var (
 		Add a site to your password store. This site can optionally be a part
 		of a group by prepending a group name and slash to the site name.
 		Will prompt for confirmation when a site path is not unique.
-		passgo 
+		passgo
 	passgo rename site-path
 		Rename an entry in the password vault.
 	passgo edit site-path
@@ -130,6 +131,9 @@ func main() {
 	case "clone":
 		repo := os.Args[2]
 		sync.Clone(repo)
+	case "--copy", "-c":
+		site := os.Args[2]
+		copy.Copy(site)
 	default:
 		addArgList := os.Args[1:]
 		path := strings.Join(addArgList, " ")
