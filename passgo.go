@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"flag"
 
 	"github.com/ejcx/passgo/edit"
 	"github.com/ejcx/passgo/generate"
@@ -69,7 +70,10 @@ var (
 `
 )
 
+var copyPass = flag.Bool("copy", false, "If true, copy password to clipboard instead of displaying it")
+
 func main() {
+	flag.Parse()
 	if len(os.Args) < 2 {
 		show.ListAll()
 		return
@@ -145,15 +149,15 @@ func main() {
 			repo := os.Args[2]
 			sync.Clone(repo)
 		}
-	case "--copy", "-c":
-		if enoughArguments(2) {
-			site := os.Args[2]
-			copy.Copy(site)
-		}
 	default:
-		addArgList := os.Args[1:]
-		path := strings.Join(addArgList, " ")
-		show.Site(path)
+		if *copyPass {
+			path := os.Args[2]
+			copy.Copy(path)
+		} else {
+			addArgList := os.Args[1:]
+			path := strings.Join(addArgList, " ")
+			show.Site(path)
+		}
 	}
 }
 
