@@ -62,14 +62,14 @@ func Find(frag string) {
 }
 
 // Site will print out the password of the site that matches path
-func Site(path string) {
+func Site(path string, copyPassword bool) {
 	allSites, allErrors := SearchAll(One, path)
 	if len(allSites) == 0 {
 		fmt.Printf("Site with path %s not found", path)
 		return
 	}
 	masterPrivKey := pc.GetMasterKey()
-	showPassword(allSites, masterPrivKey)
+	showPassword(allSites, masterPrivKey, copyPassword)
 	handleErrors(allErrors)
 }
 
@@ -80,7 +80,7 @@ func ListAll() {
 	handleErrors(allErrors)
 }
 
-func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte) {
+func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, copyPassword bool) {
 	for _, siteList := range allSites {
 		for _, site := range siteList {
 			sitePassword, err := pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
@@ -88,7 +88,11 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte) {
 				log.Println("Could not decrypt site password.")
 				continue
 			}
-			fmt.Println(string(sitePassword))
+			if copyPassword {
+				pio.ToClipboard(string(sitePassword))
+			} else {
+				fmt.Println(string(sitePassword))
+			}
 		}
 	}
 }
