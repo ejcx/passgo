@@ -81,9 +81,11 @@ func main() {
 	// Handle passgo subcommands.
 	switch os.Args[1] {
 	case "edit":
-		addArgList := os.Args[2:]
-		path := strings.Join(addArgList, " ")
-		edit.Edit(path)
+		if enoughArguments(2) {
+			addArgList := os.Args[2:]
+			path := strings.Join(addArgList, " ")
+			edit.Edit(path)
+		}
 	case "ls":
 		fallthrough
 	case "find":
@@ -91,29 +93,37 @@ func main() {
 		path := strings.Join(addArgList, " ")
 		show.Find(path)
 	case "generate":
-		pwlenStr := os.Args[2]
-		pwlen, err := strconv.Atoi(pwlenStr)
-		if err != nil {
-			pwlen = -1
+		if enoughArguments(2) {
+			pwlenStr := os.Args[2]
+			pwlen, err := strconv.Atoi(pwlenStr)
+			if err != nil {
+				pwlen = -1
+			}
+			pass := generate.Generate(pwlen)
+			fmt.Println(pass)
 		}
-		pass := generate.Generate(pwlen)
-		fmt.Println(pass)
 	case "init":
 		initialize.Init()
 	case "insert":
-		addArgList := os.Args[2:]
-		pathName := strings.Join(addArgList, " ")
-		insert.Insert(pathName)
+		if enoughArguments(2) {
+			addArgList := os.Args[2:]
+			pathName := strings.Join(addArgList, " ")
+			insert.Insert(pathName)
+		}
 	case "rm":
 		fallthrough
 	case "remove":
-		addArgList := os.Args[2:]
-		path := strings.Join(addArgList, " ")
-		edit.Remove(path)
+		if enoughArguments(2) {
+			addArgList := os.Args[2:]
+			path := strings.Join(addArgList, " ")
+			edit.Remove(path)
+		}
 	case "rename":
-		addArgList := os.Args[2:]
-		path := strings.Join(addArgList, " ")
-		edit.Rename(path)
+		if enoughArguments(2) {
+			addArgList := os.Args[2:]
+			path := strings.Join(addArgList, " ")
+			edit.Rename(path)
+		}
 	case "help":
 		fallthrough
 	case "usage":
@@ -126,18 +136,31 @@ func main() {
 	case "push":
 		sync.Push()
 	case "remote":
-		remote := os.Args[2]
-		sync.Remote(remote)
+		if enoughArguments(2) {
+			remote := os.Args[2]
+			sync.Remote(remote)
+		}
 	case "clone":
-		repo := os.Args[2]
-		sync.Clone(repo)
+		if enoughArguments(2) {
+			repo := os.Args[2]
+			sync.Clone(repo)
+		}
 	case "--copy", "-c":
-		site := os.Args[2]
-		copy.Copy(site)
+		if enoughArguments(2) {
+			site := os.Args[2]
+			copy.Copy(site)
+		}
 	default:
 		addArgList := os.Args[1:]
 		path := strings.Join(addArgList, " ")
 		show.Site(path)
-
 	}
+}
+
+func enoughArguments(argumentIndex int) bool {
+	if len(os.Args) < argumentIndex + 1 {
+		fmt.Println("Not enough arguments, use 'gopass usage' for help")
+		return false
+	}
+	return true
 }
