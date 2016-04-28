@@ -85,49 +85,34 @@ func main() {
 	// Handle passgo subcommands.
 	switch os.Args[1] {
 	case "edit":
-		if enoughArguments(2) {
-			addArgList := os.Args[2:]
-			path := strings.Join(addArgList, " ")
-			edit.Edit(path)
-		}
+		path := getArguments(2, false, true)
+		edit.Edit(path)
 	case "ls":
 		fallthrough
 	case "find":
-		addArgList := os.Args[2:]
-		path := strings.Join(addArgList, " ")
+		path := getArguments(2, false, false)
 		show.Find(path)
 	case "generate":
-		if enoughArguments(2) {
-			pwlenStr := os.Args[2]
-			pwlen, err := strconv.Atoi(pwlenStr)
-			if err != nil {
-				pwlen = -1
-			}
-			pass := generate.Generate(pwlen)
-			fmt.Println(pass)
+		pwlenStr := getArguments(2, true, false)
+		pwlen, err := strconv.Atoi(pwlenStr)
+		if err != nil {
+			pwlen = -1
 		}
+		pass := generate.Generate(pwlen)
+		fmt.Println(pass)
 	case "init":
 		initialize.Init()
 	case "insert":
-		if enoughArguments(2) {
-			addArgList := os.Args[2:]
-			pathName := strings.Join(addArgList, " ")
-			insert.Insert(pathName)
-		}
+		pathName := getArguments(2, false, true)
+		insert.Insert(pathName)
 	case "rm":
 		fallthrough
 	case "remove":
-		if enoughArguments(2) {
-			addArgList := os.Args[2:]
-			path := strings.Join(addArgList, " ")
-			edit.Remove(path)
-		}
+		path := getArguments(2, false, true)
+		edit.Remove(path)
 	case "rename":
-		if enoughArguments(2) {
-			addArgList := os.Args[2:]
-			path := strings.Join(addArgList, " ")
-			edit.Rename(path)
-		}
+		path := getArguments(2, false, true)
+		edit.Rename(path)
 	case "help":
 		fallthrough
 	case "usage":
@@ -140,31 +125,42 @@ func main() {
 	case "push":
 		sync.Push()
 	case "remote":
-		if enoughArguments(2) {
-			remote := os.Args[2]
-			sync.Remote(remote)
-		}
+		remote := getArguments(2, true, true)
+		sync.Remote(remote)
 	case "clone":
-		if enoughArguments(2) {
-			repo := os.Args[2]
-			sync.Clone(repo)
-		}
+		repo := getArguments(2, true, true)
+		sync.Clone(repo)
 	default:
 		if *copyPass {
-			path := os.Args[2]
+			path := getArguments(2, true, true)
 			copy.Copy(path)
 		} else {
-			addArgList := os.Args[1:]
-			path := strings.Join(addArgList, " ")
+			path := getArguments(1, true, true)
 			show.Site(path)
 		}
 	}
 }
 
-func enoughArguments(argumentIndex int) bool {
-	if len(os.Args) < argumentIndex + 1 {
-		fmt.Println("Not enough arguments, use 'gopass usage' for help")
-		return false
+// A helper function for getting arguments from the user. The 'startIndex' paramter
+// is used for telling where the first argument is expected to be. The 'exact'
+// paramter is used to determine if only the first found argument should be
+// returned or if all arguments should be returned as a string split by spaces.
+// The 'required' paramter determines if the argument is needed to continue. If
+// 'required' is set to true and no paramter can be found an error message is
+// printed and the program exits.
+func getArguments(startIndex int, exact bool, required bool) string {
+	if len(os.Args) < startIndex + 1 {
+		if required {
+			fmt.Println("Not enough arguments, use 'gopass usage' for help")
+			os.Exit(1)
+		} else {
+			return ""
+		}
 	}
-	return true
+
+	if exact {
+		return os.Args[startIndex]
+	} else {
+		return strings.Join(os.Args[startIndex:], " ")
+	}
 }
