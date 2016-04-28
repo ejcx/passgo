@@ -5,9 +5,9 @@ import (
   "log"
 
   "github.com/atotto/clipboard"
-	"github.com/ejcx/passgo/show"
+  "github.com/ejcx/passgo/show"
   "github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
+  "github.com/ejcx/passgo/pio"
 )
 
 // This function copies the password for a site to the clipboard.
