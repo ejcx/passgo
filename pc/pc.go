@@ -219,8 +219,8 @@ func GeneratePassword(specs *PasswordSpecs, passlen int) (pass string, err error
 			}
 			// Check to make sure that the letter is inside
 			// the range of printable characters
-			if letter > 32 && letter < 127 {
-				pass += string(letter)
+			if letr := string(letter); letter > 32 && letter < 127 && (len(letr) + len(pass) <= passlen)  {
+				pass += letr
 			}
 			updateSpec(specs, letter)
 		}
