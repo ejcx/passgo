@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/ejcx/passgo/pc"
 	"github.com/ejcx/passgo/pio"
@@ -35,12 +34,7 @@ func Insert(name string) {
 	}
 
 	// Read the master public key.
-	f, err := os.Open(config)
-	if err != nil {
-		log.Fatalf("Could not open config file: %s", err.Error())
-	}
-
-	configContents, err := ioutil.ReadAll(f)
+	configContents, err := ioutil.ReadFile(config)
 	if err != nil {
 		log.Fatalf("Could not get config file contents: %s", err.Error())
 	}

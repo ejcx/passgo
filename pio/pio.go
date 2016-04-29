@@ -9,17 +9,18 @@ import (
 	"log"
 	"os"
 	"os/user"
+	"path/filepath"
 
 	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
 	// ConfigFileName is the name of the passgo config file.
-	ConfigFileName = "/config"
+	ConfigFileName = "config"
 	// SiteFileName is the name of the passgo password store file.
-	SiteFileName = "/sites.json"
+	SiteFileName = "sites.json"
 	// AttackFileName is the name of the passgo under attack file.
-	AttackFileName = "/attacked"
+	AttackFileName = "attacked"
 )
 
 var (
@@ -94,7 +95,7 @@ func SitesVaultExists() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	sitesFilePath := c + SiteFileName
+	sitesFilePath := filepath.Join(c, SiteFileName)
 	_, err = os.Stat(sitesFilePath)
 	if err != nil {
 		return false, err
@@ -114,7 +115,7 @@ func GetHomeDir() (d string, err error) {
 func GetPassDir() (d string, err error) {
 	home, err := GetHomeDir()
 	if err == nil {
-		d = home + "/.passgo"
+		d = filepath.Join(home, ".passgo")
 	}
 	return
 }
@@ -123,7 +124,7 @@ func GetPassDir() (d string, err error) {
 func GetConfigPath() (p string, err error) {
 	d, err := GetPassDir()
 	if err == nil {
-		p = d + ConfigFileName
+		p = filepath.Join(d, ConfigFileName)
 	}
 	return
 }
@@ -132,7 +133,7 @@ func GetConfigPath() (p string, err error) {
 func GetSitesFile() (d string, err error) {
 	p, err := GetPassDir()
 	if err == nil {
-		d = p + SiteFileName
+		d = filepath.Join(p, SiteFileName)
 	}
 	return
 }
@@ -155,13 +156,11 @@ func GetVault() (s SiteFile) {
 	if err != nil {
 		log.Fatalf("Could not get pass dir: %s", err.Error())
 	}
-	f, err := os.OpenFile(si, os.O_RDWR, 0666)
-	defer f.Close()
+	siteFileContents, err := ioutil.ReadFile(si)
 	if err != nil {
-		log.Fatalf("Could not open site file. Run passgo init.: %s", err.Error())
-	}
-	siteFileContents, err := ioutil.ReadAll(f)
-	if err != nil {
+		if os.IsNotExist(err) {
+			log.Fatalf("Could not open site file. Run passgo init.: %s", err.Error())
+		}
 		log.Fatalf("Could not read site file: %s", err.Error())
 	}
 	err = json.Unmarshal(siteFileContents, &s)
@@ -195,20 +194,13 @@ func UpdateVault(s SiteFile) (err error) {
 	if err != nil {
 		log.Fatalf("Could not get pass dir: %s", err.Error())
 	}
-	f, err := os.OpenFile(si, os.O_RDWR|os.O_TRUNC, 0666)
-	if err != nil {
-		log.Fatalf("Could not open site file: %s", err.Error())
-	}
 	siteFileContents, err := json.Marshal(s)
 	if err != nil {
 		log.Fatalf("Could not marshal site info: %s", err.Error())
 	}
 
-	// Lets be safe here.
-	f.Seek(0, 0)
-
 	// Write the site with the newly appended site to the file.
-	_, err = f.Write(siteFileContents)
+	err = ioutil.WriteFile(si, siteFileContents, 0666)
 	return
 }
 
@@ -229,11 +221,7 @@ func (c *ConfigFile) SaveFile() (err error) {
 	if err != nil {
 		log.Fatalf("Could not get config file path: %s", err.Error())
 	}
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		log.Fatalf("Could not open config file: %s", err.Error())
-	}
-	_, err = f.Write(cBytes)
+	err = ioutil.WriteFile(path, cBytes, 0666)
 	return
 }
 
@@ -243,11 +231,7 @@ func ReadConfig() (c ConfigFile, err error) {
 	if err != nil {
 		return
 	}
-	f, err := os.Open(config)
-	if err != nil {
-		return
-	}
-	configBytes, err := ioutil.ReadAll(f)
+	configBytes, err := ioutil.ReadFile(config)
 	if err != nil {
 		return
 	}
@@ -258,7 +242,7 @@ func ReadConfig() (c ConfigFile, err error) {
 // PromptPass will prompt user's for a password by terminal.
 func PromptPass(prompt string) (pass string, err error) {
 	fmt.Printf("%s: ", prompt)
-	passBytes, err := terminal.ReadPassword(0)
+	passBytes, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 	fmt.Println("")
 	return string(passBytes), err
 }
@@ -275,7 +259,7 @@ func Prompt(prompt string) (s string, err error) {
 func GetAttackFileName() (f string, err error) {
 	d, err := GetPassDir()
 	if err == nil {
-		f = d + AttackFileName
+		f = filepath.Join(d, AttackFileName)
 	}
 	return
 }
