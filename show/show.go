@@ -94,9 +94,13 @@ func showResults(allSites map[string][]pio.SiteInfo) {
 			preName := innerPrefix + regPrefix
 			if counter == len(allSites) {
 				preGroup = lastPrefix
-				preName = innerLastPrefix + regPrefix
+				sitePrefix := innerLastPrefix
+				if group == "" {
+					sitePrefix = ""
+				}
+				preName = sitePrefix + regPrefix
 				if siteCounter == len(siteList) {
-					preName = innerLastPrefix + lastPrefix
+					preName = sitePrefix + lastPrefix
 				}
 			} else {
 				if siteCounter == len(siteList) {
@@ -105,7 +109,9 @@ func showResults(allSites map[string][]pio.SiteInfo) {
 			}
 
 			if siteCounter == 1 {
-				fmt.Println(preGroup + group)
+				if group != "" {
+					fmt.Println(preGroup + group)
+				}
 			}
 			fmt.Printf("%s%s\n", preName, site.Name)
 			siteCounter++
