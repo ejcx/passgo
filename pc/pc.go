@@ -189,6 +189,13 @@ func updateSpec(specs *PasswordSpecs, letter byte) {
 	}
 }
 
+func resetSpecs(specs *PasswordSpecs) {
+	specs.NeedsDigit = true
+	specs.NeedsUpper = true
+	specs.NeedsLower = true
+	specs.NeedsSymbol = true
+}
+
 // GeneratePassword is used to generate a password like string securely.
 // GeneratePassword has no upper limit to the length of a password that
 // it can generate, but is restricted by the size of int.
@@ -202,25 +209,27 @@ func updateSpec(specs *PasswordSpecs, letter byte) {
 func GeneratePassword(specs *PasswordSpecs, passlen int) (pass string, err error) {
 	var letters [2048]byte
 	for {
-		if passlen <= len(pass) {
-			if specs.Satisfied() {
-				return pass, nil
-			}
+		if passlen == len(pass) && (specs.Satisfied() || passlen < 4) {
+			return pass, nil
+		} else if len(pass) > passlen && specs.Satisfied() {
+			pass = ""
+			resetSpecs(specs)
 		}
 		_, err = rand.Read(letters[:])
 		if err != nil {
 			return
 		}
 		for _, letter := range letters {
-			if passlen <= len(pass) {
-				if specs.Satisfied() {
-					return pass, nil
-				}
+			if passlen == len(pass) && (specs.Satisfied() || passlen < 4) {
+				return pass, nil
+			} else if len(pass) > passlen && specs.Satisfied() {
+				pass = ""
+				resetSpecs(specs)
 			}
 			// Check to make sure that the letter is inside
 			// the range of printable characters
-			if letr := string(letter); letter > 32 && letter < 127 && (len(letr) + len(pass) <= passlen)  {
-				pass += letr
+			if letter > 32 && letter < 127 {
+				pass += string(letter)
 			}
 			updateSpec(specs, letter)
 		}
