@@ -10,6 +10,7 @@ import (
 	"github.com/ejcx/passgo/generate"
 	"github.com/ejcx/passgo/initialize"
 	"github.com/ejcx/passgo/insert"
+	"github.com/ejcx/passgo/pc"
 	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/show"
 	"github.com/ejcx/passgo/sync"
@@ -61,6 +62,9 @@ var (
 	passgo clone remote-url
 		Clone will copy the remote url in to the .passgo directory in your
 		home directory. It will fail if the directory already exists.
+	passgo integrity
+		Update the integrity hash of your password store if you are planning
+		to manually push to the server.
 	passgo usage
 		Print this message!
 	passgo version
@@ -69,13 +73,13 @@ var (
 )
 
 func main() {
+	// Check to see if this user is under attack.
+	pio.CheckAttackFile()
+
 	if len(os.Args) < 2 {
 		show.ListAll()
 		return
 	}
-
-	// Check to see if this user is under attack.
-	pio.CheckAttackFile()
 
 	// Handle passgo subcommands.
 	switch os.Args[1] {
@@ -103,6 +107,9 @@ func main() {
 		addArgList := os.Args[2:]
 		pathName := strings.Join(addArgList, " ")
 		insert.Insert(pathName)
+	case "integrity":
+		pc.GetSitesIntegrity()
+		sync.Commit(sync.IntegrityCommit)
 	case "rm":
 		fallthrough
 	case "remove":

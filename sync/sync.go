@@ -17,7 +17,11 @@ import (
 )
 
 var (
-	underAttack = "You are under attack! Your public key has changed"
+	// IntegrityCommit is the standard message for integrity hash commits
+	IntegrityCommit = "Updated integrity hash"
+
+	underAttack      = "You are under attack! Your public key has changed."
+	underAttackSites = "You are under attack! Your site file has changed."
 )
 
 // Initialize a new git repository in the user's home .passgo directory.
@@ -79,6 +83,12 @@ func Push() {
 	if err != nil {
 		log.Fatalf("Could not change to pass directory: %s", err.Error())
 	}
+	c := pc.GetSitesIntegrity()
+	err = c.SaveFile()
+	if err != nil {
+		log.Fatalf("Could not save config file with hmac: %s", err.Error())
+	}
+	Commit("Updated integrity hash")
 	_, err = exec.Command("git", "push", "-u", "pass-origin", "master").Output()
 	if err != nil {
 		log.Fatalf("Could not push changes: %s", err.Error())
@@ -99,7 +109,7 @@ func Pull() {
 	if err != nil {
 		log.Fatalf("Could not pull changes: %s", err.Error())
 	}
-	verifyPubKey()
+	verifyIntegrity()
 }
 
 // Clone will copy a remote repository to your .passgo directory.
@@ -116,40 +126,38 @@ func Clone(repo string) {
 	if err != nil {
 		log.Fatalf("Could not clone repo: %s", err.Error())
 	}
-	verifyPubKey()
+	verifyIntegrity()
 }
 
 // InsertCommit is used to create a new commit with an insert message.
 func InsertCommit(name string) {
-	commit(fmt.Sprintf("Inserted site %s", name))
+	Commit(fmt.Sprintf("Inserted site %s", name))
 }
 
 // RenameCommit is used to create a new commit with a rename commit message.
 func RenameCommit(from, to string) {
-	commit(fmt.Sprintf("Renamed site %s to %s", from, to))
+	Commit(fmt.Sprintf("Renamed site %s to %s", from, to))
 }
 
 // RemoveCommit is used to create a new commit with a remove commit message.
 func RemoveCommit(name string) {
-	commit(fmt.Sprintf("Removed site %s", name))
+	Commit(fmt.Sprintf("Removed site %s", name))
 }
 
 // RegenerateCommit is used to create a new commit with a regenerate message.
 func RegenerateCommit(name string) {
-	commit(fmt.Sprintf("Regenerated password for site %s", name))
+	Commit(fmt.Sprintf("Regenerated password for site %s", name))
 }
 
-func verifyPubKey() {
-	c, err := pio.ReadConfig()
-	if err != nil {
-		log.Fatalf("Could not read config: %s", err.Error())
-	}
-
-	pass, err := pio.PromptPass("Enter master password")
+func verifyIntegrity() {
+	pass, err := pio.PromptPass(pio.MasterPassPrompt)
 	if err != nil {
 		log.Fatalf("Could not get master password: %s", err.Error())
 	}
-
+	c, err := pio.ReadConfig()
+	if err != nil {
+		log.Fatalf("Could not get config file.", err.Error())
+	}
 	hmacKey, err := pc.Scrypt([]byte(pass), c.HmacSalt[:])
 	if err != nil {
 		log.Fatalf("Could not generate public key: %s", err.Error())
@@ -162,10 +170,37 @@ func verifyPubKey() {
 	}
 	messageMac := mac.Sum(nil)
 	if !hmac.Equal(messageMac, c.PubKeyHmac) {
+		err = pio.CreateAttack()
+		if err != nil {
+			log.Fatalf("%s: %s", underAttack, err.Error())
+		}
 		log.Fatalf(underAttack)
 	}
+
+	// We also need to check the integrity of the sites file.
+	vaultBytes := pio.GetSiteFileBytes()
+
+	siteHmacKey, err := pc.Scrypt([]byte(pass), c.SiteHmacSalt[:])
+	if err != nil {
+		log.Fatalf("Could not generate site hmac key: %s", err.Error())
+	}
+	mac = hmac.New(sha256.New, siteHmacKey[:])
+	_, err = mac.Write(vaultBytes)
+	if err != nil {
+		log.Fatalf("Could not write to hmac: %s", err.Error())
+	}
+	vaultMac := mac.Sum(nil)
+	if !hmac.Equal(vaultMac, c.SiteHmac) {
+		// Created the attacked file.
+		err = pio.CreateAttack()
+		if err != nil {
+			log.Fatalf("%s: %s", underAttackSites, err.Error())
+		}
+		log.Fatalf(underAttackSites)
+	}
 }
-func commit(msg string) {
+
+func Commit(msg string) {
 	d, err := pio.GetPassDir()
 	if err != nil {
 		log.Fatalf("Could not get pass dir", err.Error())
@@ -178,8 +213,5 @@ func commit(msg string) {
 	if err != nil {
 		log.Fatalf("Could not add files for commit: %s", err.Error())
 	}
-	_, err = exec.Command("git", "commit", "-m", msg).Output()
-	if err != nil {
-		log.Fatalf("Could not commit change: %s", err.Error())
-	}
+	exec.Command("git", "commit", "-m", msg).Output()
 }

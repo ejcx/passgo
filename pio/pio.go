@@ -22,6 +22,11 @@ const (
 	AttackFileName = "/attacked"
 )
 
+var (
+	// MasterPassPrompt is the standard prompt string for all passgo
+	MasterPassPrompt = "Enter master password"
+)
+
 // PassFile is an interface for how all passgo files should be saved.
 type PassFile interface {
 	SaveFile() (err error)
@@ -31,9 +36,11 @@ type PassFile interface {
 type ConfigFile struct {
 	MasterKeyPrivSealed []byte
 	PubKeyHmac          []byte
+	SiteHmac            []byte
 	MasterPubKey        [32]byte
 	MasterPassKeySalt   [32]byte
 	HmacSalt            [32]byte
+	SiteHmacSalt        [32]byte
 }
 
 // SiteInfo represents a single saved password entry.
@@ -151,7 +158,7 @@ func GetVault() (s SiteFile) {
 	f, err := os.OpenFile(si, os.O_RDWR, 0666)
 	defer f.Close()
 	if err != nil {
-		log.Fatalf("Could not open site file: %s", err.Error())
+		log.Fatalf("Could not open site file. Run passgo init.: %s", err.Error())
 	}
 	siteFileContents, err := ioutil.ReadAll(f)
 	if err != nil {
@@ -160,6 +167,24 @@ func GetVault() (s SiteFile) {
 	err = json.Unmarshal(siteFileContents, &s)
 	if err != nil {
 		log.Fatalf("Could not unmarshal site info: %s", err.Error())
+	}
+	return
+}
+
+// GetSiteFileBytes returns the bytes instead of a SiteFile
+func GetSiteFileBytes() (b []byte) {
+	si, err := GetSitesFile()
+	if err != nil {
+		log.Fatalf("Could not get pass dir: %s", err.Error())
+	}
+	f, err := os.OpenFile(si, os.O_RDWR, 0666)
+	defer f.Close()
+	if err != nil {
+		log.Fatalf("Could not open site file: %s", err.Error())
+	}
+	b, err = ioutil.ReadAll(f)
+	if err != nil {
+		log.Fatalf("Could not read site file: %s", err.Error())
 	}
 	return
 }
@@ -185,7 +210,6 @@ func UpdateVault(s SiteFile) (err error) {
 	// Write the site with the newly appended site to the file.
 	_, err = f.Write(siteFileContents)
 	return
-
 }
 
 // SaveFile is used by ConfigFiles to update the passgo config.
@@ -233,7 +257,7 @@ func ReadConfig() (c ConfigFile, err error) {
 
 // PromptPass will prompt user's for a password by terminal.
 func PromptPass(prompt string) (pass string, err error) {
-	fmt.Printf("%s:", prompt)
+	fmt.Printf("%s: ", prompt)
 	passBytes, err := terminal.ReadPassword(0)
 	fmt.Println("")
 	return string(passBytes), err
@@ -247,6 +271,7 @@ func Prompt(prompt string) (s string, err error) {
 	return string(l), err
 }
 
+// GetAttackFileName returns the full path of the attack file.
 func GetAttackFileName() (f string, err error) {
 	d, err := GetPassDir()
 	if err == nil {
@@ -254,6 +279,8 @@ func GetAttackFileName() (f string, err error) {
 	}
 	return
 }
+
+// CreateAttack will create the attack file.
 func CreateAttack() error {
 	fn, err := GetAttackFileName()
 	if err != nil {
@@ -264,12 +291,13 @@ func CreateAttack() error {
 	return err
 }
 
+// CheckAttackFile will determine if the attack file exists.
 func CheckAttackFile() {
 	fn, err := GetAttackFileName()
 	if err != nil {
 		log.Fatalf("Could not get home directory.", fn)
 	}
 	if _, err := os.Stat(fn); err == nil {
-		log.Fatalf("You are under attack. Remove the %s file to proceed.", fn)
+		log.Fatalf("You are under attack. Remove file %s to proceed.", fn)
 	}
 }

@@ -92,6 +92,8 @@ $ passgo
    └──bbbbb
 ```
 
+#### passgo integrity
+The integrity subcommand is used to manually generate and save the integrity hash of the site vault. Sometimes git issues arise and some manual intervention is necessary. Run this command first.
 
 #### passgo remote git-url
 passgo can sync your password store to a remote git repository. The remote subcommand is used to add a git remote to your local passgo git repository.
