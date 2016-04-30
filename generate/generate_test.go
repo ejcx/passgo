@@ -1,27 +1,25 @@
-package generate;
+package generate
 
 import (
 	"testing"
 	"unicode/utf8"
-	
-	"github.com/ejcx/passgo/generate"
 )
 
 var generateTests = []struct {
-  n        int // input
-  expected int // expected result
+	n        int // input
+	expected int // expected result
 }{
-  {0,       24},
-  {-1,      24},
-  {5,        5},
-  {10,      10},
-  {1<<18,   24},
-  {1<<32-1, 24},
+	{0, 24},
+	{-1, 24},
+	{5, 5},
+	{10, 10},
+	{1 << 18, 24},
+	{1<<32 - 1, 24},
 }
 
 func TestGenerate(t *testing.T) {
 	for _, tt := range generateTests {
-		actual := generate.Generate(tt.n)
+		actual := Generate(tt.n)
 		actual_length := utf8.RuneCountInString(actual)
 
 		if actual_length < tt.expected {
