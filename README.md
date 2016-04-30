@@ -8,6 +8,12 @@ passgo is meant to be secure enough that you can publically post your password v
 
 First make sure you have [installed golang](https://golang.org/doc/install) and set up your [`$GOPATH`](https://github.com/golang/go/wiki/GOPATH).
 
+It's recommend that you add `$GOPATH/bin` to your `$PATH`. This will make any golang executables available as commands in bash for you to use. Add the following to `~/.bashrc` and restart your terminal:
+
+```bash
+export PATH=$PATH:$GOPATH/bin
+```
+
 Then you can download gopass, it's dependancies and install them all with one command:
 
 ```bash
