@@ -193,4 +193,4 @@ After the site information is added, the site's generated private key is thrown 
 Syncing a plaintext public key that is used for encrypting new site data to a remote server is risky if the remote server is malicious. Because of this, an HMAC of your public key is calculated with a separate key than your symmetric master key, based on your master password and a separate 32 byte salt.
 
 ## Threat model
-The threat model of passgo assumes there are no attackers on your local machine and it assumes your remote git repository may be malicious.
+The threat model of passgo assumes there are no attackers on your local machine. The passgo vault also protects itself from the remote git server by maintaining a keyed integrity hash of the password vault. The git server is unable to change site information, decrypt site information, or read passwords. Remote git servers can delete commits and changes without being detected when cloning or pulling a passwords vault. Fixing this is not possible by any password manager.
