@@ -99,15 +99,15 @@ func main() {
 	switch os.Args[1] {
 	// Handle passgo subcommands.
 	case "edit":
-		path := getSubArguments(subArgs, ALLARGS)
+		path := getSubArguments(subArgs, 0, true)
 		edit.Edit(path)
 	case "ls":
 		fallthrough
 	case "find":
-		path := getSubArguments(subArgs, ALLARGS)
+		path := getSubArguments(subArgs, 0, false)
 		show.Find(path)
 	case "generate":
-		pwlenStr := getSubArguments(subArgs, 1)
+		pwlenStr := getSubArguments(subArgs, 0, false)
 		pwlen, err := strconv.Atoi(pwlenStr)
 		if err != nil {
 			pwlen = -1
@@ -117,7 +117,7 @@ func main() {
 	case "init":
 		initialize.Init()
 	case "insert":
-		pathName := getSubArguments(subArgs, ALLARGS)
+		pathName := getSubArguments(subArgs, 0, true)
 		insert.Insert(pathName)
 	case "integrity":
 		pc.GetSitesIntegrity()
@@ -125,10 +125,10 @@ func main() {
 	case "rm":
 		fallthrough
 	case "remove":
-		path := getSubArguments(subArgs, ALLARGS)
+		path := getSubArguments(subArgs, 0, true)
 		edit.Remove(path)
 	case "rename":
-		path := getSubArguments(subArgs, -1)
+		path := getSubArguments(subArgs, 0, true)
 		edit.Rename(path)
 	case "help":
 		fallthrough
@@ -142,13 +142,13 @@ func main() {
 	case "push":
 		sync.Push()
 	case "remote":
-		remote := getSubArguments(subArgs, 1)
+		remote := getSubArguments(subArgs, 0, true)
 		sync.Remote(remote)
 	case "clone":
-		repo := getSubArguments(subArgs, 1)
+		repo := getSubArguments(subArgs, 0, true)
 		sync.Clone(repo)
 	default:
-		path := getSubArguments(flag.Args(), -1)
+		path := getSubArguments(flag.Args(), 0, true)
 		show.Site(path, *copyPass)
 	}
 }
@@ -160,19 +160,18 @@ func printVersion() {
 	fmt.Println(version)
 }
 
-// getSubArguments requires the list of subarguments and the
-// argument number that you want returned. Non existent args
-// will return an empty string. A negative arg index will
-// return all arguments concatenated as one.
-func getSubArguments(args []string, arg int) string {
-	if len(args) == 0 {
+// getSubArguments takes a list of arguments, an argument index and a
+// flag indicating wheter an argument is required or not. If an argument
+// is required but not specified, an error message will be printed. If
+// not required, an empty string will be returned. -1 can be passed as
+// argument index to get all arguments concatenated as one.
+func getSubArguments(args []string, arg int, required bool) string {
+	if required && ((arg < 0 && len(args) == 0) || (arg >= 0 && len(args) < arg + 1)) {
+		log.Fatalf("Not enough arguments specified")
+	} else if !required && len(args) == 0 {
 		return ""
-	}
-	if arg < 0 {
+	} else if arg < 0 {
 		return strings.Join(args, " ")
-	}
-	if len(args) < arg+1 {
-		log.Fatalf("Not enough args")
 	}
 	return args[arg]
 }
