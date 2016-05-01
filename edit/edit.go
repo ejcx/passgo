@@ -21,6 +21,10 @@ import (
 
 // Remove is used to remove a site entry from the password vault given a path.
 func Remove(path string) {
+	if path == "" {
+		removeAll()
+		return
+	}
 	vault := pio.GetVault()
 	pathIndex := -1
 	for jj, siteInfo := range vault {
@@ -38,6 +42,24 @@ func Remove(path string) {
 		log.Fatalf("Could not update password vault: %s", err.Error())
 	}
 	sync.RemoveCommit(path)
+}
+
+func removeAll() {
+	certain, err := pio.PromptYesNo("Delete all sites?", false)
+	if !certain || err != nil {
+		return
+	}
+
+	vault := pio.GetVault()
+	for i := len(vault); i > 0; i-- {
+		vault, vault[len(vault)-1] = append(vault[:0], vault[1:]...), *new(pio.SiteInfo)
+	}
+	err = pio.UpdateVault(vault)
+	if err != nil {
+		log.Fatalf("Could not update password vault: %s", err.Error())
+	}
+	sync.RemoveAllCommit()
+	fmt.Println("All sites have been deleted")
 }
 
 // Edit is used to change the password of a site. New keys MUST be generated.

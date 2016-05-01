@@ -144,6 +144,11 @@ func RemoveCommit(name string) {
 	Commit(fmt.Sprintf("Removed site %s", name))
 }
 
+// RemoveAllCommit is used to create a new commit with a removed all commit message
+func RemoveAllCommit() {
+	Commit(fmt.Sprintf("Removed all sites"))
+}
+
 // RegenerateCommit is used to create a new commit with a regenerate message.
 func RegenerateCommit(name string) {
 	Commit(fmt.Sprintf("Regenerated password for site %s", name))
