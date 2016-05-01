@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -167,7 +166,8 @@ func printVersion() {
 // argument index to get all arguments concatenated as one.
 func getSubArguments(args []string, arg int, required bool) string {
 	if required && ((arg < 0 && len(args) == 0) || (arg >= 0 && len(args) < arg + 1)) {
-		log.Fatalf("Not enough arguments specified")
+		fmt.Println("Not enough arguments, use 'gopass usage' for help")
+		os.Exit(1)
 	} else if !required && len(args) == 0 {
 		return ""
 	} else if arg < 0 {
