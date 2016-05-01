@@ -11,6 +11,8 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"github.com/atotto/clipboard"
+
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -283,5 +285,11 @@ func CheckAttackFile() {
 	}
 	if _, err := os.Stat(fn); err == nil {
 		log.Fatalf("You are under attack. Remove file %s to proceed.", fn)
+	}
+}
+
+func ToClipboard(s string) {
+	if err := clipboard.WriteAll(s); err != nil {
+		log.Fatalf("Could not copy password to clipboard: %s", err.Error())
 	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -16,7 +17,14 @@ import (
 	"github.com/ejcx/passgo/sync"
 )
 
+const (
+	ALLARGS = -1
+)
+
 var (
+	// copyPass indicates that the shown password should be copied to the clipboard.
+	copyPass = flag.Bool("copy", false, "If true, copy password to clipboard instead of displaying it")
+
 	version = `======================================
 = passgo: v0.0                       =
 = The simple golang password manager =
@@ -34,7 +42,7 @@ var (
 		Add a site to your password store. This site can optionally be a part
 		of a group by prepending a group name and slash to the site name.
 		Will prompt for confirmation when a site path is not unique.
-		passgo 
+		passgo
 	passgo rename site-path
 		Rename an entry in the password vault.
 	passgo edit site-path
@@ -76,25 +84,29 @@ func main() {
 	// Check to see if this user is under attack.
 	pio.CheckAttackFile()
 
-	if len(os.Args) < 2 {
+	flag.Parse()
+
+	// Default behavior of just running the command is listing all sites.
+	if len(flag.Args()) < 1 {
 		show.ListAll()
 		return
 	}
 
-	// Handle passgo subcommands.
+	// subArgs is used by subcommands to retreive only their args.
+	subArgs := flag.Args()[1:]
+
 	switch os.Args[1] {
+	// Handle passgo subcommands.
 	case "edit":
-		addArgList := os.Args[2:]
-		path := strings.Join(addArgList, " ")
+		path := getSubArguments(subArgs, 0, true)
 		edit.Edit(path)
 	case "ls":
 		fallthrough
 	case "find":
-		addArgList := os.Args[2:]
-		path := strings.Join(addArgList, " ")
+		path := getSubArguments(subArgs, 0, false)
 		show.Find(path)
 	case "generate":
-		pwlenStr := os.Args[2]
+		pwlenStr := getSubArguments(subArgs, 0, false)
 		pwlen, err := strconv.Atoi(pwlenStr)
 		if err != nil {
 			pwlen = -1
@@ -104,8 +116,7 @@ func main() {
 	case "init":
 		initialize.Init()
 	case "insert":
-		addArgList := os.Args[2:]
-		pathName := strings.Join(addArgList, " ")
+		pathName := getSubArguments(subArgs, 0, true)
 		insert.Insert(pathName)
 	case "integrity":
 		pc.GetSitesIntegrity()
@@ -113,17 +124,15 @@ func main() {
 	case "rm":
 		fallthrough
 	case "remove":
-		addArgList := os.Args[2:]
-		path := strings.Join(addArgList, " ")
+		path := getSubArguments(subArgs, 0, true)
 		edit.Remove(path)
 	case "rename":
-		addArgList := os.Args[2:]
-		path := strings.Join(addArgList, " ")
+		path := getSubArguments(subArgs, 0, true)
 		edit.Rename(path)
 	case "help":
 		fallthrough
 	case "usage":
-		fmt.Println(usage)
+		printUsage()
 	case "version":
 		fmt.Println(version)
 	// These are used for syncing passwords.
@@ -132,15 +141,37 @@ func main() {
 	case "push":
 		sync.Push()
 	case "remote":
-		remote := os.Args[2]
+		remote := getSubArguments(subArgs, 0, true)
 		sync.Remote(remote)
 	case "clone":
-		repo := os.Args[2]
+		repo := getSubArguments(subArgs, 0, true)
 		sync.Clone(repo)
 	default:
-		addArgList := os.Args[1:]
-		path := strings.Join(addArgList, " ")
-		show.Site(path)
-
+		path := getSubArguments(flag.Args(), 0, true)
+		show.Site(path, *copyPass)
 	}
+}
+
+func printUsage() {
+	fmt.Println(usage)
+}
+func printVersion() {
+	fmt.Println(version)
+}
+
+// getSubArguments takes a list of arguments, an argument index and a
+// flag indicating wheter an argument is required or not. If an argument
+// is required but not specified, an error message will be printed. If
+// not required, an empty string will be returned. -1 can be passed as
+// argument index to get all arguments concatenated as one.
+func getSubArguments(args []string, arg int, required bool) string {
+	if required && ((arg < 0 && len(args) == 0) || (arg >= 0 && len(args) < arg + 1)) {
+		fmt.Println("Not enough arguments, use 'gopass usage' for help")
+		os.Exit(1)
+	} else if !required && len(args) == 0 {
+		return ""
+	} else if arg < 0 {
+		return strings.Join(args, " ")
+	}
+	return args[arg]
 }
