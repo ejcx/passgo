@@ -4,12 +4,13 @@
 package pc
 
 import (
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/ejcx/passgo/pio"
 	"golang.org/x/crypto/nacl/box"
@@ -117,7 +118,7 @@ func Scrypt(pass, salt []byte) (key [32]byte, err error) {
 // GetMasterKey is used to prompt user's for their password, read the
 // user's passgo config file and decrypt the master private key.
 func GetMasterKey() (masterPrivKey [32]byte) {
-	pass, err := pio.PromptPass("Enter master password")
+	pass, err := pio.PromptPass(pio.MasterPassPrompt)
 	if err != nil {
 		log.Fatalf("Could not get master password: %s", err.Error())
 	}
@@ -126,9 +127,8 @@ func GetMasterKey() (masterPrivKey [32]byte) {
 		log.Fatalf("Could not get config file: %s", err.Error())
 	}
 
-	cf, err := os.Open(c)
 	var configFile pio.ConfigFile
-	configFileBytes, err := ioutil.ReadAll(cf)
+	configFileBytes, err := ioutil.ReadFile(c)
 	if err != nil {
 		log.Fatalf("Could not read config file: %s", err.Error())
 	}
@@ -225,4 +225,30 @@ func GeneratePassword(specs *PasswordSpecs, passlen int) (pass string, err error
 			updateSpec(specs, letter)
 		}
 	}
+}
+
+// GetSitesIntegrity is used to update the sites vault integrity file.
+func GetSitesIntegrity() pio.ConfigFile {
+	c, err := pio.ReadConfig()
+	if err != nil {
+		log.Fatalf("Could not read config: %s", err.Error())
+	}
+	pass, err := pio.PromptPass(pio.MasterPassPrompt)
+	if err != nil {
+		log.Fatalf("Could not get master password: %s", err.Error())
+	}
+	vaultBytes := pio.GetSiteFileBytes()
+
+	siteHmacKey, err := Scrypt([]byte(pass), c.SiteHmacSalt[:])
+	if err != nil {
+		log.Fatalf("Could not generate site hmac key: %s", err.Error())
+	}
+	mac := hmac.New(sha256.New, siteHmacKey[:])
+	_, err = mac.Write(vaultBytes)
+	if err != nil {
+		log.Fatalf("Could not write to hmac: %s", err.Error())
+	}
+	vaultMac := mac.Sum(nil)
+	c.SiteHmac = vaultMac
+	return c
 }

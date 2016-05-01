@@ -135,12 +135,19 @@ func Init() {
 	}
 	pubKeyHmac := mac.Sum(nil)
 
+	var siteHmacSalt [32]byte
+	_, err = rand.Read(siteHmacSalt[:])
+	if err != nil {
+		log.Fatalf("Could not generate site hmac salt")
+	}
+
 	passConfig := pio.ConfigFile{
 		MasterKeyPrivSealed: sealedMasterPrivKey,
 		PubKeyHmac:          pubKeyHmac,
 		MasterPubKey:        *pub,
 		MasterPassKeySalt:   keySalt,
 		HmacSalt:            hmacSalt,
+		SiteHmacSalt:        siteHmacSalt,
 	}
 
 	if err = passConfig.SaveFile(); err != nil {

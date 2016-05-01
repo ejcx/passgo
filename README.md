@@ -1,7 +1,37 @@
+[![Build Status](https://travis-ci.org/ejcx/passgo.svg?branch=master)](https://travis-ci.org/ejcx/passgo)
 # passgo
 stores, retrieves, generates, and synchronizes passwords securely and is written in Go! It is inspired by https://passwordstore.org but has a few key differences. The most important difference is passgo is not GPG based. Instead it uses a master password to securely store your passwords.
 
 passgo is meant to be secure enough that you can publically post your password vault. I've started publishing my passwords [here](https://github.com/ejcx/passwords.git)
+
+## Getting started with passgo
+
+First make sure you have [installed golang](https://golang.org/doc/install) and set up your [`$GOPATH`](https://github.com/golang/go/wiki/GOPATH).
+
+It's recommend that you add `$GOPATH/bin` to your `$PATH`. This will make any golang executables available as commands in bash for you to use. Add the following to `~/.bashrc` and restart your terminal:
+
+```bash
+export PATH=$PATH:$GOPATH/bin
+```
+
+Then you can download gopass, it's dependancies and install them all with one command:
+
+```bash
+go get github.com/ejcx/passgo
+```
+
+Next create a vault to store passwords in and a master password:
+
+```bash
+passgo init
+```
+
+Finally, to learn more you can either read about the commands listed in this README or run:
+
+```bash
+passgo usage
+```
+
 ## COMMANDS
 
 #### passgo
@@ -92,6 +122,8 @@ $ passgo
    └──bbbbb
 ```
 
+#### passgo integrity
+The integrity subcommand is used to manually generate and save the integrity hash of the site vault. Sometimes git issues arise and some manual intervention is necessary. Run this command first.
 
 #### passgo remote git-url
 passgo can sync your password store to a remote git repository. The remote subcommand is used to add a git remote to your local passgo git repository.
@@ -161,4 +193,4 @@ After the site information is added, the site's generated private key is thrown 
 Syncing a plaintext public key that is used for encrypting new site data to a remote server is risky if the remote server is malicious. Because of this, an HMAC of your public key is calculated with a separate key than your symmetric master key, based on your master password and a separate 32 byte salt.
 
 ## Threat model
-The threat model of passgo assumes there are no attackers on your local machine and it assumes your remote git repository may be malicious.
+The threat model of passgo assumes there are no attackers on your local machine. The passgo vault also protects itself from the remote git server by maintaining a keyed integrity hash of the password vault. The git server is unable to change site information, decrypt site information, or read passwords. Remote git servers can delete commits and changes without being detected when cloning or pulling a passwords vault. Fixing this is not possible by any password manager.

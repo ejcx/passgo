@@ -24,6 +24,12 @@
 			"revision": "1f22c0103821b9390939b6776727195525381532"
 		},
 		{
+			"checksumSHA1": "SNSgdp5ShDZ57VZqBkQ0PXJCJIM=",
+			"path": "github.com/atotto/clipboard",
+			"revision": "bb272b845f1112e10117e3e45ce39f690c0001ad",
+			"revisionTime": "2016-02-19T12:44:21+09:00"
+		},
+		{
 			"checksumSHA1": "hl0ImqBoUBVNVmz5ImX6YVBV9JU=",
 			"path": "golang.org/x/crypto/nacl/box",
 			"revision": "c197bcf24cde29d3f73c7b4ac6fd41f4384e8af6",

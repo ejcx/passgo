@@ -1,23 +1,31 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
-	"flag"
 
 	"github.com/ejcx/passgo/edit"
 	"github.com/ejcx/passgo/generate"
 	"github.com/ejcx/passgo/initialize"
 	"github.com/ejcx/passgo/insert"
+	"github.com/ejcx/passgo/pc"
 	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/show"
 	"github.com/ejcx/passgo/sync"
-	"github.com/ejcx/passgo/copy"
+)
+
+const (
+	ALLARGS = -1
 )
 
 var (
+	// copyPass indicates that the shown password should be copied to the clipboard.
+	copyPass = flag.Bool("copy", false, "If true, copy password to clipboard instead of displaying it")
+
 	version = `======================================
 = passgo: v0.0                       =
 = The simple golang password manager =
@@ -63,6 +71,9 @@ var (
 	passgo clone remote-url
 		Clone will copy the remote url in to the .passgo directory in your
 		home directory. It will fail if the directory already exists.
+	passgo integrity
+		Update the integrity hash of your password store if you are planning
+		to manually push to the server.
 	passgo usage
 		Print this message!
 	passgo version
@@ -70,30 +81,33 @@ var (
 `
 )
 
-var copyPass = flag.Bool("copy", false, "If true, copy password to clipboard instead of displaying it")
-
 func main() {
+	// Check to see if this user is under attack.
+	pio.CheckAttackFile()
+
 	flag.Parse()
-	if len(os.Args) < 2 {
+
+	// Default behavior of just running the command is listing all sites.
+	if len(flag.Args()) < 1 {
 		show.ListAll()
 		return
 	}
 
-	// Check to see if this user is under attack.
-	pio.CheckAttackFile()
+	// subArgs is used by subcommands to retreive only their args.
+	subArgs := flag.Args()[1:]
 
-	// Handle passgo subcommands.
 	switch os.Args[1] {
+	// Handle passgo subcommands.
 	case "edit":
-		path := getArguments(2, false, true)
+		path := getSubArguments(subArgs, 0, true)
 		edit.Edit(path)
 	case "ls":
 		fallthrough
 	case "find":
-		path := getArguments(2, false, false)
+		path := getSubArguments(subArgs, 0, false)
 		show.Find(path)
 	case "generate":
-		pwlenStr := getArguments(2, true, false)
+		pwlenStr := getSubArguments(subArgs, 0, false)
 		pwlen, err := strconv.Atoi(pwlenStr)
 		if err != nil {
 			pwlen = -1
@@ -103,20 +117,23 @@ func main() {
 	case "init":
 		initialize.Init()
 	case "insert":
-		pathName := getArguments(2, false, true)
+		pathName := getSubArguments(subArgs, 0, true)
 		insert.Insert(pathName)
+	case "integrity":
+		pc.GetSitesIntegrity()
+		sync.Commit(sync.IntegrityCommit)
 	case "rm":
 		fallthrough
 	case "remove":
-		path := getArguments(2, false, true)
+		path := getSubArguments(subArgs, 0, true)
 		edit.Remove(path)
 	case "rename":
-		path := getArguments(2, false, true)
+		path := getSubArguments(subArgs, 0, true)
 		edit.Rename(path)
 	case "help":
 		fallthrough
 	case "usage":
-		fmt.Println(usage)
+		printUsage()
 	case "version":
 		fmt.Println(version)
 	// These are used for syncing passwords.
@@ -125,42 +142,36 @@ func main() {
 	case "push":
 		sync.Push()
 	case "remote":
-		remote := getArguments(2, true, true)
+		remote := getSubArguments(subArgs, 0, true)
 		sync.Remote(remote)
 	case "clone":
-		repo := getArguments(2, true, true)
+		repo := getSubArguments(subArgs, 0, true)
 		sync.Clone(repo)
 	default:
-		if *copyPass {
-			path := getArguments(2, true, true)
-			copy.Copy(path)
-		} else {
-			path := getArguments(1, true, true)
-			show.Site(path)
-		}
+		path := getSubArguments(flag.Args(), 0, true)
+		show.Site(path, *copyPass)
 	}
 }
 
-// A helper function for getting arguments from the user. The 'startIndex' paramter
-// is used for telling where the first argument is expected to be. The 'exact'
-// paramter is used to determine if only the first found argument should be
-// returned or if all arguments should be returned as a string split by spaces.
-// The 'required' paramter determines if the argument is needed to continue. If
-// 'required' is set to true and no paramter can be found an error message is
-// printed and the program exits.
-func getArguments(startIndex int, exact bool, required bool) string {
-	if len(os.Args) < startIndex + 1 {
-		if required {
-			fmt.Println("Not enough arguments, use 'gopass usage' for help")
-			os.Exit(1)
-		} else {
-			return ""
-		}
-	}
+func printUsage() {
+	fmt.Println(usage)
+}
+func printVersion() {
+	fmt.Println(version)
+}
 
-	if exact {
-		return os.Args[startIndex]
-	} else {
-		return strings.Join(os.Args[startIndex:], " ")
+// getSubArguments takes a list of arguments, an argument index and a
+// flag indicating wheter an argument is required or not. If an argument
+// is required but not specified, an error message will be printed. If
+// not required, an empty string will be returned. -1 can be passed as
+// argument index to get all arguments concatenated as one.
+func getSubArguments(args []string, arg int, required bool) string {
+	if required && ((arg < 0 && len(args) == 0) || (arg >= 0 && len(args) < arg + 1)) {
+		log.Fatalf("Not enough arguments specified")
+	} else if !required && len(args) == 0 {
+		return ""
+	} else if arg < 0 {
+		return strings.Join(args, " ")
 	}
+	return args[arg]
 }

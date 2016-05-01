@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/ejcx/passgo/pc"
@@ -32,6 +33,14 @@ const (
 	Search
 )
 
+func init() {
+	/* Windows doesn't work with ambiguous width characters */
+	if runtime.GOOS == "windows" {
+		lastPrefix = "+--"
+		regPrefix = "+--"
+	}
+}
+
 func handleErrors(allErrors []error) {
 	errorStr := "Error"
 	if len(allErrors) == 0 {
@@ -53,14 +62,14 @@ func Find(frag string) {
 }
 
 // Site will print out the password of the site that matches path
-func Site(path string) {
+func Site(path string, copyPassword bool) {
 	allSites, allErrors := SearchAll(One, path)
 	if len(allSites) == 0 {
 		fmt.Printf("Site with path %s not found", path)
 		return
 	}
 	masterPrivKey := pc.GetMasterKey()
-	showPassword(allSites, masterPrivKey)
+	showPassword(allSites, masterPrivKey, copyPassword)
 	handleErrors(allErrors)
 }
 
@@ -71,7 +80,7 @@ func ListAll() {
 	handleErrors(allErrors)
 }
 
-func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte) {
+func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, copyPassword bool) {
 	for _, siteList := range allSites {
 		for _, site := range siteList {
 			sitePassword, err := pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
@@ -79,7 +88,11 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte) {
 				log.Println("Could not decrypt site password.")
 				continue
 			}
-			fmt.Println(string(sitePassword))
+			if copyPassword {
+				pio.ToClipboard(string(sitePassword))
+			} else {
+				fmt.Println(string(sitePassword))
+			}
 		}
 	}
 }
@@ -94,9 +107,13 @@ func showResults(allSites map[string][]pio.SiteInfo) {
 			preName := innerPrefix + regPrefix
 			if counter == len(allSites) {
 				preGroup = lastPrefix
-				preName = innerLastPrefix + regPrefix
+				sitePrefix := innerLastPrefix
+				if group == "" {
+					sitePrefix = ""
+				}
+				preName = sitePrefix + regPrefix
 				if siteCounter == len(siteList) {
-					preName = innerLastPrefix + lastPrefix
+					preName = sitePrefix + lastPrefix
 				}
 			} else {
 				if siteCounter == len(siteList) {
@@ -105,7 +122,9 @@ func showResults(allSites map[string][]pio.SiteInfo) {
 			}
 
 			if siteCounter == 1 {
-				fmt.Println(preGroup + group)
+				if group != "" {
+					fmt.Println(preGroup + group)
+				}
 			}
 			fmt.Printf("%s%s\n", preName, site.Name)
 			siteCounter++
@@ -124,13 +143,11 @@ func SearchAll(st searchType, searchFor string) (allSites map[string][]pio.SiteI
 		log.Fatalf("Could not get site file: %s", err.Error())
 	}
 
-	f, err := os.Open(siteFile)
+	siteFileContents, err := ioutil.ReadFile(siteFile)
 	if err != nil {
-		log.Fatalf("Could not open site file: %s", err.Error())
-	}
-
-	siteFileContents, err := ioutil.ReadAll(f)
-	if err != nil {
+		if os.IsNotExist(err) {
+			log.Fatalf("Could not open site file. Run passgo init.: %s", err.Error())
+		}
 		log.Fatalf("Could not read site file contents: %s", err.Error())
 	}
 
