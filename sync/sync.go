@@ -126,7 +126,9 @@ func Clone(repo string) {
 	if err != nil {
 		log.Fatalf("Could not clone repo: %s", err.Error())
 	}
+	Remote(repo)
 	verifyIntegrity()
+
 }
 
 // InsertCommit is used to create a new commit with an insert message.
