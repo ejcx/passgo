@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/signal"
 	"os/user"
 	"path/filepath"
 
@@ -243,8 +244,26 @@ func ReadConfig() (c ConfigFile, err error) {
 
 // PromptPass will prompt user's for a password by terminal.
 func PromptPass(prompt string) (pass string, err error) {
+	// Make a copy of STDIN's state to restore afterward
+	fd := int(os.Stdin.Fd())
+	oldState, err := terminal.GetState(fd)
+	if err != nil {
+		panic("Could not get state of terminal: " + err.Error())
+	}
+	defer terminal.Restore(fd, oldState)
+
+	// Restore STDIN in the event of a signal interuption
+	sigch := make(chan os.Signal, 1)
+	signal.Notify(sigch, os.Interrupt)
+	go func() {
+		for _ = range sigch {
+			terminal.Restore(fd, oldState)
+			os.Exit(1)
+		}
+	}()
+
 	fmt.Printf("%s: ", prompt)
-	passBytes, err := terminal.ReadPassword(int(os.Stdin.Fd()))
+	passBytes, err := terminal.ReadPassword(fd)
 	fmt.Println("")
 	return string(passBytes), err
 }

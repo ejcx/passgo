@@ -11,7 +11,7 @@ var (
 )
 
 // Generate will return a securely generated password.
-// A default password length of 24 with be used if
+// A default password length of 24 will be used if
 //     1. No pwlen is supplied
 //     2. pwlen is less than 1
 //     3. pwlen is greater than 2^17(131,072)
@@ -22,7 +22,7 @@ func Generate(pwlen int) string {
 		pwlen = defaultPwLen
 	}
 
-	// By default, we should generate a strog password that needs everything
+	// By default, we should generate a strong password that needs everything
 	specs := &pc.PasswordSpecs{
 		NeedsUpper:  true,
 		NeedsLower:  true,
