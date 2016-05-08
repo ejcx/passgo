@@ -5,8 +5,10 @@
 package sync
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -24,6 +26,19 @@ var (
 	underAttackSites = "You are under attack! Your site file has changed."
 )
 
+func run(name string, args ...string) (string, error) {
+	cmd := exec.Command(name, args...)
+	var stderr, stdout bytes.Buffer
+	cmd.Stderr = &stderr
+	cmd.Stdout = &stdout
+	out := stdout.String()
+	err := cmd.Run()
+	if err != nil {
+		return out, errors.New(stderr.String())
+	}
+	return out, nil
+}
+
 // Initialize a new git repository in the user's home .passgo directory.
 func Initialize() {
 	d, err := pio.GetPassDir()
@@ -34,21 +49,21 @@ func Initialize() {
 	if err != nil {
 		log.Fatalf("Could not change to pass directory: %s", err.Error())
 	}
-	_, err = exec.Command("git", "init").Output()
+	_, err = run("git", "init")
 	if err != nil {
 		log.Fatalf("Could not initialize git repo: %s", err.Error())
 	}
 	configFile := pio.ConfigFileName
 	siteFile := pio.SiteFileName
-	_, err = exec.Command("git", "add", configFile).Output()
+	_, err = run("git", "add", configFile)
 	if err != nil {
 		log.Fatalf("Could not add %s: %s", configFile, err.Error())
 	}
-	_, err = exec.Command("git", "add", siteFile).Output()
+	_, err = run("git", "add", siteFile)
 	if err != nil {
 		log.Fatalf("Could not add %s: %s", siteFile, err.Error())
 	}
-	_, err = exec.Command("git", "commit", "-m", "Do not pass go do not collect $200.").Output()
+	_, err = run("git", "commit", "-m", "Do not pass go do not collect $200.")
 	if err != nil {
 		log.Fatalf("Could not make initial commit: %s", err.Error())
 	}
@@ -66,8 +81,8 @@ func Remote(remoteUrl string) {
 	}
 	// Remove previous remote. If there was none it will throw an error so just
 	// ignore it. If it fails, adding pass-origin will fail.
-	exec.Command("git", "remote", "remove", "pass-origin").Output()
-	_, err = exec.Command("git", "remote", "add", "pass-origin", remoteUrl).Output()
+	run("git", "remote", "remove", "pass-origin")
+	_, err = run("git", "remote", "add", "pass-origin", remoteUrl)
 	if err != nil {
 		log.Fatalf("Could not add remote %s: %s", remoteUrl, err.Error())
 	}
@@ -89,7 +104,7 @@ func Push() {
 		log.Fatalf("Could not save config file with hmac: %s", err.Error())
 	}
 	Commit("Updated integrity hash")
-	_, err = exec.Command("git", "push", "-u", "pass-origin", "master").Output()
+	_, err = run("git", "push", "-u", "pass-origin", "master")
 	if err != nil {
 		log.Fatalf("Could not push changes: %s", err.Error())
 	}
@@ -105,7 +120,7 @@ func Pull() {
 	if err != nil {
 		log.Fatalf("Could not change to pass directory: %s", err.Error())
 	}
-	_, err = exec.Command("git", "pull").Output()
+	_, err = run("git", "pull")
 	if err != nil {
 		log.Fatalf("Could not pull changes: %s", err.Error())
 	}
@@ -122,7 +137,7 @@ func Clone(repo string) {
 	if err != nil {
 		log.Fatalf("Could not change to home directory: %s", err.Error())
 	}
-	_, err = exec.Command("git", "clone", repo, ".passgo").Output()
+	_, err = run("git", "clone", repo, ".passgo")
 	if err != nil {
 		log.Fatalf("Could not clone repo: %s", err.Error())
 	}
@@ -211,9 +226,9 @@ func Commit(msg string) {
 	if err != nil {
 		log.Fatalf("Could not change to pass directory: %s", err.Error())
 	}
-	_, err = exec.Command("git", "add", "-u").Output()
+	_, err = run("git", "add", "-u")
 	if err != nil {
 		log.Fatalf("Could not add files for commit: %s", err.Error())
 	}
-	exec.Command("git", "commit", "-m", msg).Output()
+	run("git", "commit", "-m", msg)
 }
