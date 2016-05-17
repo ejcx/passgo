@@ -18,10 +18,19 @@ const (
 	// PassPrompt is the string formatter that should be used
 	// when prompting for a password.
 	PassPrompt = "Enter password for %s"
+
+	// prevent confusion between commands a site name cmd to generate
+	// ./passgo help | awk '/^\spassgo [a-z]*/{printf "\x22"$2"\x22"", "}' | xargs -0 printf '[]string(%s"help")'
+	blackList = []string("init", "insert", "rename", "edit", "generate", "find", "ls", "remove", "rm", "pull", "push", "remote", "clone", "integrity", "usage", "version", "help")
 )
 
 // Insert is used to add a new entry to the vault.
 func Insert(name string) {
+	for _, v := range blackList {
+		if name == v {
+			log.Fatalf("%s Is an invaild site name", name)
+		}
+	}
 	var c pio.ConfigFile
 	pub, priv, err := box.GenerateKey(rand.Reader)
 	if err != nil {
