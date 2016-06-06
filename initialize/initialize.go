@@ -51,7 +51,7 @@ func Init() {
 	}
 
 	if needsDir {
-		err = os.Mkdir(passDir, 0755)
+		err = os.Mkdir(passDir, 0700)
 		if err != nil {
 			log.Fatalf("Could not create passgo vault: %s", err.Error())
 		}
