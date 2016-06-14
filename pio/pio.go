@@ -116,9 +116,12 @@ func GetHomeDir() (d string, err error) {
 
 // GetPassDir is used to return the user's passgo directory.
 func GetPassDir() (d string, err error) {
-	home, err := GetHomeDir()
-	if err == nil {
-		d = filepath.Join(home, ".passgo")
+	d, ok := os.LookupEnv("PASSGODIR")
+	if !ok {
+		home, err := GetHomeDir()
+		if err == nil {
+			d = filepath.Join(home, ".passgo")
+		}
 	}
 	return
 }
