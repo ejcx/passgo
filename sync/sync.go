@@ -117,7 +117,7 @@ func Pull() {
 func Clone(repo string) {
 	passdir, err := pio.GetPassDir()
 	if err != nil {
-		log.Fatalf("Could not get PASSGODIR: %s:", err.Error())
+		log.Fatalf("Could not get PASSGODIR: %s", err.Error())
 	}
 	home := filepath.Base(passdir)
 	err = os.Chdir(home)
