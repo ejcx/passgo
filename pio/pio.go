@@ -197,7 +197,7 @@ func UpdateVault(s SiteFile) (err error) {
 	if err != nil {
 		log.Fatalf("Could not get pass dir: %s", err.Error())
 	}
-	siteFileContents, err := json.Marshal(s)
+	siteFileContents, err := json.MarshalIndent(s, "", "\t")
 	if err != nil {
 		log.Fatalf("Could not marshal site info: %s", err.Error())
 	}
@@ -216,7 +216,7 @@ func (c *ConfigFile) SaveFile() (err error) {
 			log.Fatalf("pass config could not be found: %s", err.Error())
 		}
 	}
-	cBytes, err := json.Marshal(c)
+	cBytes, err := json.MarshalIndent(c, "", "\t")
 	if err != nil {
 		log.Fatalf("Could not marshal config file: %s", err.Error())
 	}
