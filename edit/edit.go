@@ -14,9 +14,9 @@ import (
 
 	"golang.org/x/crypto/nacl/box"
 
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
-	"github.com/ejcx/passgo/sync"
+	"github.com/dncohen/passgo/pc"
+	"github.com/dncohen/passgo/pio"
+	"github.com/dncohen/passgo/sync"
 )
 
 // Remove is used to remove a site entry from the password vault given a path.

@@ -12,8 +12,8 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
+	"github.com/dncohen/passgo/pc"
+	"github.com/dncohen/passgo/pio"
 )
 
 var (
