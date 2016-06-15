@@ -64,7 +64,8 @@ func Init() {
 		log.Fatalf(configFound)
 	}
 
-	config, err := os.Create(configFile)
+	// Create file with secure permission.  os.Create() leaves file world-readable.
+	config, err := os.OpenFile(configFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Fatalf("Could not create passgo config: %s", err.Error())
 	}
@@ -72,7 +73,8 @@ func Init() {
 
 	// Handle creation and initialization of the site vault.
 	if !hasVault {
-		sf, err := os.Create(sitesFile)
+		// Create file, with secure permissions.
+		sf, err := os.OpenFile(sitesFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 		if err != nil {
 			log.Fatalf("Could not create pass sites vault: %s", err.Error())
 		}
