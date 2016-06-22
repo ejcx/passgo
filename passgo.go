@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ejcx/passgo/edit"
-	"github.com/ejcx/passgo/generate"
-	"github.com/ejcx/passgo/initialize"
-	"github.com/ejcx/passgo/insert"
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
-	"github.com/ejcx/passgo/show"
-	"github.com/ejcx/passgo/sync"
+	"github.com/dncohen/passgo/edit"
+	"github.com/dncohen/passgo/generate"
+	"github.com/dncohen/passgo/initialize"
+	"github.com/dncohen/passgo/insert"
+	"github.com/dncohen/passgo/pc"
+	"github.com/dncohen/passgo/pio"
+	"github.com/dncohen/passgo/show"
+	"github.com/dncohen/passgo/sync"
 )
 
 const (
@@ -49,7 +49,7 @@ var (
 	passgo edit site-path
 		Change the password of a site in the vault.
 	passgo generate
-		Prints a randomly generated password. The length of this
+		Prints a randomly generated password.
 	passgo find site-path
 		Prints all sites that contain the site-path. Used to print just one group
 		or all sites that contain a certain word in the group or name.

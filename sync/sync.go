@@ -11,9 +11,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
+	"github.com/dncohen/passgo/pc"
+	"github.com/dncohen/passgo/pio"
 )
 
 var (
@@ -114,17 +115,18 @@ func Pull() {
 
 // Clone will copy a remote repository to your .passgo directory.
 func Clone(repo string) {
-	home, err := pio.GetHomeDir()
+	passdir, err := pio.GetPassDir()
 	if err != nil {
-		log.Fatalf("Could not get home directory: %s", err.Error())
+		log.Fatalf("Could not get PASSGODIR: %s:", err.Error())
 	}
+	home := filepath.Base(passdir)
 	err = os.Chdir(home)
 	if err != nil {
-		log.Fatalf("Could not change to home directory: %s", err.Error())
+		log.Fatalf("Could not change to directory %s: %s", home, err.Error())
 	}
-	_, err = exec.Command("git", "clone", repo, ".passgo").Output()
+	_, err = exec.Command("git", "clone", repo, filepath.Dir(passdir)).Output()
 	if err != nil {
-		log.Fatalf("Could not clone repo: %s", err.Error())
+		log.Fatalf("Could not clone repo %s: %s", passdir, err.Error())
 	}
 	Remote(repo)
 	verifyIntegrity()
