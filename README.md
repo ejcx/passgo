@@ -2,7 +2,7 @@
 # passgo
 stores, retrieves, generates, and synchronizes passwords securely and is written in Go! It is inspired by https://passwordstore.org but has a few key differences. The most important difference is passgo is not GPG based. Instead it uses a master password to securely store your passwords.
 
-passgo is meant to be secure enough that you can publically post your password vault. I've started publishing my passwords [here](https://github.com/ejcx/passwords.git)
+passgo is meant to be secure enough that you can publicly post your password vault. I've started publishing my passwords [here](https://github.com/ejcx/passwords.git).
 
 ## Getting started with passgo
 
@@ -14,7 +14,7 @@ It's recommend that you add `$GOPATH/bin` to your `$PATH`. This will make any go
 export PATH=$PATH:$GOPATH/bin
 ```
 
-Then you can download gopass, it's dependancies and install them all with one command:
+Then you can download gopass, its dependencies and install them all with one command:
 
 ```bash
 go get github.com/ejcx/passgo
@@ -67,7 +67,7 @@ $ passgo insert mney/mint.com
 ```
 	
 #### passgo rename group/pass-name
-If we add a site and wish to change the name of the site later it is simple to do. Here we rename our mint.com site after mispelling the group name.
+If we add a site and wish to change the name of the site later it is simple to do. Here we rename our mint.com site after misspelling the group name.
 
 ```
 $ passgo rename mney/mint.com
