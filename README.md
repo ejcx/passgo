@@ -68,6 +68,7 @@ $ passgo insert mney/mint.com
 
 #### passgo show group/pass-name
 Show is used to display a password in standard out. *Previously it was possible to display a password using `passgo group/pass-name` but this is no longer supported*.
+
 ```
 $ passgo show mney/mint.com
 Enter master password:
