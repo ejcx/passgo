@@ -37,6 +37,8 @@ var (
 	usage = `Usage:
 	passgo
 		Print the contents of the vault.
+	passgo show site-path
+		Print the password of a passgo entry.
 	passgo init
 		Initialize the .passgo directory, and generate your secret keys.
 	passgo insert site-path
@@ -146,9 +148,11 @@ func main() {
 	case "clone":
 		repo := getSubArguments(subArgs, 0)
 		sync.Clone(repo)
-	default:
-		path := getSubArguments(flag.Args(), -1)
+	case "show":
+		path := getSubArguments(flag.Args(), 1)
 		show.Site(path, *copyPass)
+	default:
+		log.Fatalf("%s\nInvalid Command %s", usage, os.Args[1])
 	}
 }
 

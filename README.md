@@ -65,6 +65,14 @@ Here we are adding mint.com to the password store, but more specifically to the 
 ```
 $ passgo insert mney/mint.com
 ```
+
+#### passgo show group/pass-name
+Show is used to display a password in standard out. *Previously it was possible to display a password using `passgo group/pass-name` but this is no longer supported*.
+```
+$ passgo show mney/mint.com
+Enter master password:
+dolladollabills$$1
+```
 	
 #### passgo rename group/pass-name
 If we add a site and wish to change the name of the site later it is simple to do. Here we rename our mint.com site after misspelling the group name.
