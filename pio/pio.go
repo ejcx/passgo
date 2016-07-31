@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"os/user"
 	"path/filepath"
+	"strings"
 
 	"github.com/atotto/clipboard"
 
@@ -277,6 +278,25 @@ func Prompt(prompt string) (s string, err error) {
 	stdin := bufio.NewReader(os.Stdin)
 	l, _, err := stdin.ReadLine()
 	return string(l), err
+}
+
+func PromptYesNo(prompt string, defaultYes bool) (ans bool, err error) {
+	a := ""
+	if defaultYes {
+		a, err = Prompt(prompt + " [Y/n]: ")
+	} else {
+		a, err = Prompt(prompt + " [y/N]: ")
+	}
+	switch strings.TrimSpace(strings.ToLower(a)) {
+		case "y", "yes", "true":
+			return true, err
+		case "n", "no", "false":
+			return false, err
+		case "":
+			return defaultYes, err
+		default:
+			return PromptYesNo(prompt, defaultYes)
+	}
 }
 
 // GetAttackFileName returns the full path of the attack file.
