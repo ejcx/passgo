@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -83,15 +84,40 @@ func ListAll() {
 func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, copyPassword bool) {
 	for _, siteList := range allSites {
 		for _, site := range siteList {
-			sitePassword, err := pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
-			if err != nil {
-				log.Println("Could not decrypt site password.")
-				continue
+			var unsealed []byte
+			var err error
+			if site.IsFile {
+				fileDir, err := pio.GetEncryptedFilesDir()
+				if err != nil {
+					log.Fatalf("Could not get encrypted file dir when searching vault: %s", err.Error())
+				}
+				filePath := filepath.Join(fileDir, site.FileName)
+				f, err := os.OpenFile(filePath, os.O_RDONLY, 0600)
+				if err != nil {
+					log.Fatalf("Could not open encrypted file: %s", err.Error())
+				}
+				defer f.Close()
+
+				fileSealed, err := ioutil.ReadAll(f)
+				if err != nil {
+					log.Fatalf("Could not read encrypted file: %s", err.Error())
+				}
+				unsealed, err = pc.OpenAsym(fileSealed, &site.PubKey, &masterPrivKey)
+				if err != nil {
+					log.Fatalf("Could not decrypt file bytes: %s", err.Error())
+				}
+
+			} else {
+				unsealed, err = pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
+				if err != nil {
+					log.Println("Could not decrypt site password.")
+					continue
+				}
 			}
 			if copyPassword {
-				pio.ToClipboard(string(sitePassword))
+				pio.ToClipboard(string(unsealed))
 			} else {
-				fmt.Println(string(sitePassword))
+				fmt.Println(string(unsealed))
 			}
 		}
 	}
@@ -166,10 +192,14 @@ func SearchAll(st searchType, searchFor string) (allSites map[string][]pio.SiteI
 		name := s.Name[slashIndex+1:]
 		pass := s.PassSealed
 		pubKey := s.PubKey
+		isFile := s.IsFile
+		filename := s.FileName
 		si := pio.SiteInfo{
 			Name:       name,
 			PassSealed: pass,
 			PubKey:     pubKey,
+			IsFile:     isFile,
+			FileName:   filename,
 		}
 		if st == One {
 			if name == searchFor || fmt.Sprintf("%s/%s", group, name) == searchFor {

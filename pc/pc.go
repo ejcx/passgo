@@ -7,6 +7,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -251,4 +252,14 @@ func GetSitesIntegrity() pio.ConfigFile {
 	vaultMac := mac.Sum(nil)
 	c.SiteHmac = vaultMac
 	return c
+}
+
+// GenHexString will generate a random 32 character hex string.
+func GenHexString() (string, error) {
+	var b [16]byte
+	_, err := rand.Read(b[:])
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b[:]), nil
 }

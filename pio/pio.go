@@ -24,6 +24,8 @@ const (
 	SiteFileName = "sites.json"
 	// AttackFileName is the name of the passgo under attack file.
 	AttackFileName = "attacked"
+	// EncryptedFileDir is the name of the passgo encrypted file dir.
+	EncryptedFileDir = "files"
 )
 
 var (
@@ -52,10 +54,30 @@ type SiteInfo struct {
 	PubKey     [32]byte
 	PassSealed []byte
 	Name       string
+	FileName   string
+	IsFile     bool
 }
 
 // SiteFile represents the entire passgo password store.
 type SiteFile []SiteInfo
+
+func PassFileDirExists() (bool, error) {
+	d, err := GetEncryptedFilesDir()
+	if err != nil {
+		return false, err
+	}
+	dirInfo, err := os.Stat(d)
+	if err == nil {
+		if dirInfo.IsDir() {
+			return true, nil
+		}
+	} else {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+	}
+	return false, err
+}
 
 // PassDirExists is used to determine if the passgo
 // directory in the user's home directory exists.
@@ -135,6 +157,16 @@ func GetConfigPath() (p string, err error) {
 	return
 }
 
+// GetFilesDir is used to get the directory that we store
+// encrypted files in.
+func GetEncryptedFilesDir() (p string, err error) {
+	d, err := GetPassDir()
+	if err == nil {
+		p = filepath.Join(d, EncryptedFileDir)
+	}
+	return
+}
+
 // GetSitesFile will return the user's passgo vault.
 func GetSitesFile() (d string, err error) {
 	p, err := GetPassDir()
@@ -142,6 +174,33 @@ func GetSitesFile() (d string, err error) {
 		d = filepath.Join(p, SiteFileName)
 	}
 	return
+}
+
+func (s *SiteInfo) AddFile(fileBytes []byte, filename string) error {
+	encFileDir, err := GetEncryptedFilesDir()
+	if err != nil {
+		return err
+	}
+	// Make sure that the file directory exists.
+	fileDirExists, err := PassFileDirExists()
+	if err != nil {
+		return err
+	}
+	fmt.Println(fileDirExists)
+	if !fileDirExists {
+		err = os.Mkdir(encFileDir, 0700)
+		if err != nil {
+			log.Fatalf("Could not create passgo encrypted file dir: %s", err.Error())
+		}
+	}
+	encFilePath := filepath.Join(encFileDir, filename)
+	err = ioutil.WriteFile(encFilePath, fileBytes, 0666)
+	if err != nil {
+		return err
+	}
+
+	// We still need to add this site info to the bytes.
+	return s.AddSite()
 }
 
 // AddSite is used by individual password entries to update the vault.
