@@ -27,8 +27,9 @@ var (
 	copyPass = flag.Bool("copy", false, "If true, copy password to clipboard instead of displaying it")
 
 	version = `======================================
-= passgo: v0.0                       =
-= The simple golang password manager =
+= passgo: v1.0                       =
+= The simple golang password and     =
+= file manager                       =
 =                                    =
 = Twiinsen Security                  =
 = evan@twiinsen.com                  =
@@ -59,8 +60,12 @@ var (
 		An alias for the find subcommand.
 	passgo remove site-path
 		Remove a site from the password vault by specifying the entire site-path.
+	passgo removefile site-path
+		Remove a file from the vault by specifying the entire file-path.
 	passgo rm site-path
 		An alias for remove.
+	passgo rmfile site-path
+		An alias for removefile.
 	passgo pull
 		Pull will perform a git pull and sync the changes in the remote git
 		repository with your local repo.
@@ -97,14 +102,11 @@ func main() {
 
 	// subArgs is used by subcommands to retreive only their args.
 	subArgs := flag.Args()[1:]
-
-	switch os.Args[1] {
+	switch flag.Args()[0] {
 	case "edit":
 		path := getSubArguments(subArgs, ALLARGS)
 		edit.Edit(path)
-	case "ls":
-		fallthrough
-	case "find":
+	case "ls", "find":
 		path := getSubArguments(subArgs, ALLARGS)
 		show.Find(path)
 	case "generate":
@@ -119,25 +121,20 @@ func main() {
 		initialize.Init()
 	case "insert":
 		pathName := getSubArguments(subArgs, ALLARGS)
-		insert.Insert(pathName)
+		insert.Password(pathName)
 	case "integrity":
 		pc.GetSitesIntegrity()
 		sync.Commit(sync.IntegrityCommit)
-	case "rm":
-		fallthrough
-	case "remove":
+	case "rm", "remove":
 		path := getSubArguments(subArgs, ALLARGS)
-		edit.Remove(path)
+		edit.RemovePassword(path)
 	case "rename":
 		path := getSubArguments(subArgs, ALLARGS)
 		edit.Rename(path)
-	case "help":
-		fallthrough
-	case "usage":
+	case "help", "usage":
 		printUsage()
 	case "version":
 		printVersion()
-	// These are used for git and syncing passwords.
 	case "pull":
 		sync.Pull()
 	case "push":
@@ -151,6 +148,19 @@ func main() {
 	case "show":
 		path := getSubArguments(flag.Args(), 1)
 		show.Site(path, *copyPass)
+	case "insertfile":
+		allArgs := getSubArguments(subArgs, ALLARGS)
+		argList := strings.Split(allArgs, " ")
+		if len(argList) != 2 {
+			printUsage()
+			log.Fatalln("Incorrect args.")
+		}
+		path := argList[0]
+		filename := argList[1]
+		insert.File(path, filename)
+	case "rmfile", "removefile":
+		path := getSubArguments(subArgs, ALLARGS)
+		edit.RemoveFile(path)
 	default:
 		log.Fatalf("%s\nInvalid Command %s", usage, os.Args[1])
 	}

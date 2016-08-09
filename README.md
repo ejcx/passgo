@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/ejcx/passgo.svg?branch=master)](https://travis-ci.org/ejcx/passgo)
 # passgo
-stores, retrieves, generates, and synchronizes passwords securely and is written in Go! It is inspired by https://passwordstore.org but has a few key differences. The most important difference is passgo is not GPG based. Instead it uses a master password to securely store your passwords.
+stores, retrieves, generates, and synchronizes passwords and files securely and is written in Go! It is inspired by https://passwordstore.org but has a few key differences. The most important difference is passgo is not GPG based. Instead it uses a master password to securely store your passwords. It also supports encrypting arbitrary files.
 
-passgo is meant to be secure enough that you can publicly post your password vault. I've started publishing my passwords [here](https://github.com/ejcx/passwords.git).
+passgo is meant to be secure enough that you can publicly post your vault. I've started publishing my passwords [here](https://github.com/ejcx/passwords.git).
 
 ## Getting started with passgo
 
@@ -64,6 +64,13 @@ Here we are adding mint.com to the password store, but more specifically to the 
 
 ```
 $ passgo insert mney/mint.com
+```
+
+#### passgo insertfile group/file-name filepath
+Adding a file works almost the same as insert. Instead it has an extra argument. The file that you want to add to your vault is the final argument. Grouping works the same way with `insertfile` as `insert`.
+
+```
+$ passgo insertfile money/moneyfile.txt expenses.txt
 ```
 
 #### passgo show group/pass-name
@@ -129,6 +136,13 @@ $ passgo
 |  └──somethingelse.com
 └──twiinsen.com
    └──bbbbb
+```
+
+#### passgo removefile group/file-name
+removefile is used for removing files from the password vault. `passgo rmfile` is an alias of `passgo removefile`. removefile works the same way as remoe, except it only works on file entries in your vault.
+
+```
+$ passgo rmfile money/moneyfile.txt
 ```
 
 #### passgo integrity
