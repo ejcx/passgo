@@ -139,7 +139,7 @@ $ passgo
 ```
 
 #### passgo removefile group/file-name
-removefile is used for removing files from the password vault. `passgo rmfile` is an alias of `passgo removefile`. removefile works the same way as remoe, except it only works on file entries in your vault.
+removefile is used for removing files from the password vault. `passgo rmfile` is an alias of `passgo removefile`. removefile works the same way as remove, except it only works on file entries in your vault.
 
 ```
 $ passgo rmfile money/moneyfile.txt
