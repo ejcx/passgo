@@ -89,7 +89,7 @@ func Push() {
 	if err != nil {
 		log.Fatalf("Could not save config file with hmac: %s", err.Error())
 	}
-	Commit("Updated integrity hash")
+	Commit("Update integrity hash")
 	_, err = exec.Command("git", "push", "-u", "pass-origin", "master").Output()
 	if err != nil {
 		log.Fatalf("Could not push changes: %s", err.Error())
@@ -135,22 +135,22 @@ func Clone(repo string) {
 
 // InsertCommit is used to create a new commit with an insert message.
 func InsertCommit(name string) {
-	Commit(fmt.Sprintf("Inserted site %s", name))
+	Commit(fmt.Sprintf("Insert site %s", name))
 }
 
 // RenameCommit is used to create a new commit with a rename commit message.
 func RenameCommit(from, to string) {
-	Commit(fmt.Sprintf("Renamed site %s to %s", from, to))
+	Commit(fmt.Sprintf("Rename site %s to %s", from, to))
 }
 
 // RemoveCommit is used to create a new commit with a remove commit message.
 func RemoveCommit(name string) {
-	Commit(fmt.Sprintf("Removed site %s", name))
+	Commit(fmt.Sprintf("Remove site %s", name))
 }
 
 // RegenerateCommit is used to create a new commit with a regenerate message.
 func RegenerateCommit(name string) {
-	Commit(fmt.Sprintf("Regenerated password for site %s", name))
+	Commit(fmt.Sprintf("Regenerate password for site %s", name))
 }
 
 func verifyIntegrity() {
