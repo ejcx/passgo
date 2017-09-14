@@ -73,13 +73,13 @@ func Edit(path string) {
 		if siteInfo.Name == path {
 			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
 			if err != nil {
-				log.Fatalf("Could not get new password for %s: %s", path, err.Error())
+				log.Fatalf("Could not get new password for %s: %s", path, err)
 			}
 			newSiteInfo := reencrypt(siteInfo, newPass)
 			vault[jj] = newSiteInfo
 			err = pio.UpdateVault(vault)
 			if err != nil {
-				log.Fatalf("Could not edit %s: %s", path, err.Error)
+				log.Fatalf("Could not edit %s: %s", path, err)
 			}
 			sync.RegenerateCommit(path)
 		}
@@ -102,7 +102,7 @@ func Rename(path string) {
 			}
 			err = pio.UpdateVault(vault)
 			if err != nil {
-				log.Fatalf("Could not renmae %s: %s", path, err.Error)
+				log.Fatalf("Could not renmae %s: %s", path, err)
 			}
 			sync.RenameCommit(path, newName)
 		}

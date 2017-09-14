@@ -362,7 +362,7 @@ func CreateAttack() error {
 func CheckAttackFile() {
 	fn, err := GetAttackFileName()
 	if err != nil {
-		log.Fatalf("Could not get home directory.", fn)
+		log.Fatalf("Could not get home directory: %s", fn)
 	}
 	if _, err := os.Stat(fn); err == nil {
 		log.Fatalf("You are under attack. Remove file %s to proceed.", fn)
