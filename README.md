@@ -7,7 +7,8 @@
 - `passgo.go` @ `usage = ...` tabs converted to spaces [1tab = 2sp]; added `insertfile` usage  
 - `passgo.go` @ line 27, set flag to `true`; password sent to clipboard instead of stdout  
    `copyPass = flag.Bool("copy", true,...`   
-- Handle both username and password, per site; Add `UserSealed` to `SiteInfo`  
+- DEV: Handle both username and password, per site; `userpass` branch;  
+Added `UserSealed` to `SiteInfo`, and cloned PromptPass as UserPass;    
   
 ### Issues: 
 - panic on `passgo show ...` @ mintty terminals of   
