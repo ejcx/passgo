@@ -306,6 +306,9 @@ func ReadConfig() (c ConfigFile, err error) {
 }
 
 // PromptUser will prompt user for a site username, by terminal.
+//   DEV: want to secure username and password, so must add methods,
+//   or an interface or whatever, and muck with several files.
+//   presently just cloning PromptPass function.
 func PromptUser(prompt string) (pass string, err error) {
 	// Make a copy of STDIN's state to restore afterward
 	fd := int(os.Stdin.Fd())
