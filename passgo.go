@@ -24,70 +24,71 @@ const (
 
 var (
 	// copyPass indicates that the shown password should be copied to the clipboard.
-	copyPass = flag.Bool("copy", false, "If true, copy password to clipboard instead of displaying it")
+	copyPass = flag.Bool("copy", true, "If true, copy password to clipboard instead of displaying it")
 
 	version = `======================================
-= passgo: v1.0                       =
-= The simple golang password and     =
-= file manager                       =
+= passgo: v1.01 [f06ybeast mod]      =
+= golang password and file manager   =
 =                                    =
-= Twiinsen Security                  =
 = evan@twiinsen.com                  =
-= https://twiinsen.com/passgo        =
+= https://github.com/ejcx/passgo     =
 ======================================`
 	usage = `Usage:
-	passgo
-		Print the contents of the vault.
-	passgo show site-path
-		Print the password of a passgo entry.
-	passgo init
-		Initialize the .passgo directory, and generate your secret keys.
-	passgo insert site-path
-		Add a site to your password store. This site can optionally be a part
-		of a group by prepending a group name and slash to the site name.
-		Will prompt for confirmation when a site path is not unique.
-		passgo
-	passgo rename site-path
-		Rename an entry in the password vault.
-	passgo edit site-path
-		Change the password of a site in the vault.
-	passgo generate length=24
-		Prints a randomly generated password. The length of this password defaults
-		to 24. If a very short length is specified, the generated password will be
-		longer than desired and will contain a upper-case, lower-case, symbol, and
-		digit.
-	passgo find site-path
-		Prints all sites that contain the site-path. Used to print just one group
-		or all sites that contain a certain word in the group or name.
-	passgo ls site-path
-		An alias for the find subcommand.
-	passgo remove site-path
-		Remove a site from the password vault by specifying the entire site-path.
-	passgo removefile site-path
-		Remove a file from the vault by specifying the entire file-path.
-	passgo rm site-path
-		An alias for remove.
-	passgo rmfile site-path
-		An alias for removefile.
-	passgo pull
-		Pull will perform a git pull and sync the changes in the remote git
-		repository with your local repo.
-	passgo push
-		Push will perform a git push to sync your changes with your remote
-		git repository.
-	passgo remote remote-url
-		Remote is used to set the remote repository url. This is the repository
-		that your sites will be pushed to and pulled from.
-	passgo clone remote-url
-		Clone will copy the remote url in to the .passgo directory in your
-		home directory. It will fail if the directory already exists.
-	passgo integrity
-		Update the integrity hash of your password store if you are planning
-		to manually push to the server.
-	passgo usage
-		Print this message!
-	passgo version
-		Print version information
+  passgo
+    Print the contents of the vault.
+  passgo show site-path
+    Print the password of a passgo entry.
+  passgo init
+    Initialize the .passgo directory, and generate your secret keys.
+  passgo insert site-path
+    Add a site to your password store. This site can optionally be a part
+    of a group by prepending a group name and slash to the site name.
+    Will prompt for confirmation when a site path is not unique.
+  passgo insertfile name file-path
+    Adding a file works almost the same as insert. Instead it has an extra 
+    argument. The file that you want to add to your vault is the final 
+    argument. Grouping works the same way with insertfile as insert.
+  passgo rename site-path
+    Rename an entry in the password vault.
+  passgo edit site-path
+    Change the password of a site in the vault.
+  passgo generate length=24
+    Prints a randomly generated password. The length of this password defaults
+    to 24. If a very short length is specified, the generated password will be
+    longer than desired and will contain a upper-case, lower-case, symbol, and
+    digit.
+  passgo find site-path
+    Prints all sites that contain the site-path. Used to print just one group
+    or all sites that contain a certain word in the group or name.
+  passgo ls site-path
+    An alias for the find subcommand.
+  passgo remove site-path
+    Remove a site from the password vault by specifying the entire site-path.
+  passgo removefile site-path
+    Remove a file from the vault by specifying the entire file-path.
+  passgo rm site-path
+    An alias for remove.
+  passgo rmfile site-path
+    An alias for removefile.
+  passgo pull
+    Pull will perform a git pull and sync the changes in the remote git
+    repository with your local repo.
+  passgo push
+    Push will perform a git push to sync your changes with your remote
+    git repository.
+  passgo remote remote-url
+    Remote is used to set the remote repository url. This is the repository
+    that your sites will be pushed to and pulled from.
+  passgo clone remote-url
+    Clone will copy the remote url in to the .passgo directory in your
+    home directory. It will fail if the directory already exists.
+  passgo integrity
+    Update the integrity hash of your password store if you are planning
+    to manually push to the server.
+  passgo usage|help
+    Print this message!
+  passgo version
+    Print version information
 `
 )
 
