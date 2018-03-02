@@ -1,14 +1,14 @@
 # passgo [fork [`github.com/ejcx/passgo`](https://github.com/ejcx/passgo)]
-## A nifty password and file manager utilizing AEAD/NaCl encryption, written in golang.  
+## A nifty username/password and file manager   utilizing [AEAD](https://en.wikipedia.org/wiki/Authenticated_encryption#Authenticated_encryption_with_associated_data)/[NaCl](https://godoc.org/golang.org/x/crypto/nacl) encryption.  
 
-## Package Author @ [`github.com/ejcx`](https://github.com/ejcx)  
+## Golang package author @ [`github.com/ejcx`](https://github.com/ejcx)  
 
-## Mods/Settings [very minor]:  
+## Mods/Settings:  
+- Handle both username and password, per site; `userpass` branch;  Work-in-Progress
 - `passgo.go` @ `usage = ...` tabs converted to spaces [1tab = 2sp]; added `insertfile` usage  
 - `passgo.go` @ line 27, set flag to `true`; password sent to clipboard instead of stdout  
    `copyPass = flag.Bool("copy", true,...`   
-- DEV: Handle both username and password, per site; `userpass` branch;  
-Added `UserSealed` to `SiteInfo`, and cloned PromptPass as UserPass;    
+mods required @ passgo.go, pio.go, insert.go, show.go, and edit.go   
   
 ### Issues: 
 - panic on `passgo show ...` @ mintty terminals of   

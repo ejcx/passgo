@@ -11,10 +11,10 @@ import (
 	"github.com/ejcx/passgo/edit"
 	"github.com/ejcx/passgo/generate"
 	"github.com/ejcx/passgo/initialize"
-	"github.com/ejcx/passgo/insert"
+	"github.com/f06ybeast/passgo/insert"
 	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
-	"github.com/ejcx/passgo/show"
+	"github.com/f06ybeast/passgo/pio"
+	"github.com/f06ybeast/passgo/show"
 	"github.com/ejcx/passgo/sync"
 )
 
@@ -27,8 +27,8 @@ var (
 	copyPass = flag.Bool("copy", true, "If true, copy password to clipboard instead of displaying it")
 
 	version = `======================================
-= passgo: v1.01 [f06ybeast mod]      =
-= golang password and file manager   =
+= passgo: v1.02 [f06ybeast mod]      =
+= golang user/pass and file manager  =
 =                                    =
 = evan@twiinsen.com                  =
 = https://github.com/ejcx/passgo     =

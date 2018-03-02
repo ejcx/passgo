@@ -9,7 +9,7 @@ import (
 	"log"
 
 	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
+	"github.com/f06ybeast/passgo/pio"
 	"github.com/ejcx/passgo/sync"
 	"golang.org/x/crypto/nacl/box"
 )
@@ -19,6 +19,16 @@ const (
 	// when prompting for a password.
 	PassPrompt = "Enter password for %s"
 )
+
+// f06ybeast mod :: handle username AND password insert/show
+// `func siteSecret` replaces short decl `sitePass, err`
+func siteSecret(name, s string) (secret string) {
+	s, err := pio.PromptPass(fmt.Sprintf("Enter " + s + " for %s", name))
+	if err != nil {
+		log.Fatalf("Could not get " + s + " for site: %s", err.Error())
+	}
+	return secret
+}
 
 // Password is used to add a new password entry to the vault.
 func Password(name string) {
@@ -46,16 +56,16 @@ func Password(name string) {
 
 	masterPub := c.MasterPubKey
 
-	sitePass, err := pio.PromptPass(fmt.Sprintf("Enter password for %s", name))
-	if err != nil {
-		log.Fatalf("Could not get password for site: %s", err.Error())
-	}
+	// sitePass replaced w/ func siteSecret [above]
+	// sitePass, err := pio.PromptPass(fmt.Sprintf("Enter password for %s", name))
 
-	passSealed, err := pc.SealAsym([]byte(sitePass), &masterPub, priv)
+	userSealed, err := pc.SealAsym([]byte(siteSecret(name, "username")), &masterPub, priv)
+	passSealed, err := pc.SealAsym([]byte(siteSecret(name, "password")), &masterPub, priv)
 
 	si := pio.SiteInfo{
 		PubKey:     *pub,
 		Name:       name,
+		UserSealed: userSealed,
 		PassSealed: passSealed,
 	}
 

@@ -305,10 +305,16 @@ func ReadConfig() (c ConfigFile, err error) {
 	return
 }
 
+// NO, PromptPass clone is unnecessary; PromptPass is generic; 
+//   just rename it, e.g., PromptSecret 
+//   handle user/pass terminal input @ insert.go and show.go; 
+//   make siteSecret a func, taking user/pass str as param 
+
 // PromptUser will prompt user for a site username, by terminal.
 //   DEV: want to secure username and password, so must add methods,
 //   or an interface or whatever, and muck with several files.
 //   presently just cloning PromptPass function.
+/*
 func PromptUser(prompt string) (pass string, err error) {
 	// Make a copy of STDIN's state to restore afterward
 	fd := int(os.Stdin.Fd())
@@ -333,6 +339,7 @@ func PromptUser(prompt string) (pass string, err error) {
 	fmt.Println("")
 	return string(passBytes), err
 }
+*/
 
 // PromptPass will prompt user for site password, by terminal.
 func PromptPass(prompt string) (pass string, err error) {
