@@ -4,9 +4,10 @@
 ## Golang package author @ [`github.com/ejcx`](https://github.com/ejcx)  
 
 ## Mods/Settings:  
-- Handle both username and password, per site.  
+- Handle/encrypt both username and password, per site.  
+@ `passgo show ...`, site/user displayed [stdout], and pass sent to clipboard.  
   Mods required @ insert, show, edit operations  
--- WIP; successfully modified: insert & show   
+-- WIP; successfully modified: `insert` & `show`   
   Modified files: `passgo.go, insert.go, show.go, pio.go, pc.go`  
   `import` paths modified accordingly, from `/ejcx/` to `/f06ybeast/`  
 - `passgo.go` @ `usage = ...` tabs converted to spaces [1tab = 2sp]; added `insertfile` usage  
