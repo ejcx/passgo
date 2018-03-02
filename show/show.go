@@ -121,12 +121,13 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, co
 					continue
 				}
 			}
-			fmt.Printf(" Site: %s", string(site))
-			fmt.Printf(" User: %s", string(unsealedUser))
+			fmt.Printf("\n Site: %s\n", string(site.Name))
+			fmt.Printf(" User: %s\n", string(unsealedUser))
 			if copyPassword {
+				fmt.Println(" Pass: @ Clipboard\n\n")
 				pio.ToClipboard(string(unsealedPass))
 			} else {
-				fmt.Println(string(unsealedPass))
+				fmt.Printf(" Pass: %s\n\n", string(unsealedPass))
 			}
 		}
 	}

@@ -15,11 +15,13 @@ import (
 )
 
 // Useless? `PassPrompt` isn't used anywhere.
+/*
 const (
 	// PassPrompt is the string formatter that should be used
 	// when prompting for a password.
 	PassPrompt = "Enter password for %s"
 )
+*/
 
 // f06ybeast mod :: handle username AND password insert/show
 // `func siteSecret` replaces short decl `sitePass, err`
