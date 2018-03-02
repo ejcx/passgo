@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ejcx/passgo/edit"
 	"github.com/ejcx/passgo/generate"
 	"github.com/ejcx/passgo/initialize"
+	"github.com/ejcx/passgo/pc"
 	"github.com/ejcx/passgo/sync"
+	"github.com/f06ybeast/passgo/edit"
 	"github.com/f06ybeast/passgo/insert"
-	"github.com/f06ybeast/passgo/pc"
 	"github.com/f06ybeast/passgo/pio"
 	"github.com/f06ybeast/passgo/show"
 )
@@ -27,7 +27,7 @@ var (
 	copyPass = flag.Bool("copy", true, "If true, copy password to clipboard instead of displaying it")
 
 	version = `======================================
-= passgo: v1.02 [f06ybeast mod]      =
+= passgo: v1.03 [f06ybeast mod]      =
 = golang user/pass and file manager  =
 =                                    =
 = evan@twiinsen.com                  =
@@ -35,23 +35,20 @@ var (
 ======================================`
 	usage = `Usage:
   passgo
-    Print the contents of the vault.
-  passgo show site-path
-    Print the password of a passgo entry.
+    Print the site and file names of the vault.
+  passgo show site|file
+    If site, print the username, and send password to clipboard.
+    If file, send file contents to clipboard.
   passgo init
-    Initialize the .passgo directory, and generate your secret keys.
+    Initialize the .passgo directory, and generate secret keys.
   passgo insert site-path
-    Add a site to your password store. This site can optionally be a part
+    Add a site to password store. This site can optionally be a part
     of a group by prepending a group name and slash to the site name.
     Will prompt for confirmation when a site path is not unique.
   passgo insertfile name file-path
     Adding a file works almost the same as insert. Instead it has an extra 
     argument. The file that you want to add to your vault is the final 
     argument. Grouping works the same way with insertfile as insert.
-  passgo rename site-path
-    Rename an entry in the password vault.
-  passgo edit site-path
-    Change the password of a site in the vault.
   passgo generate length=24
     Prints a randomly generated password. The length of this password defaults
     to 24. If a very short length is specified, the generated password will be
@@ -62,14 +59,10 @@ var (
     or all sites that contain a certain word in the group or name.
   passgo ls site-path
     An alias for the find subcommand.
-  passgo remove site-path
+  passgo remove|rm site-path
     Remove a site from the password vault by specifying the entire site-path.
-  passgo removefile site-path
+  passgo removefile|rmfile site-path
     Remove a file from the vault by specifying the entire file-path.
-  passgo rm site-path
-    An alias for remove.
-  passgo rmfile site-path
-    An alias for removefile.
   passgo pull
     Pull will perform a git pull and sync the changes in the remote git
     repository with your local repo.
@@ -108,8 +101,9 @@ func main() {
 	subArgs := flag.Args()[1:]
 	switch flag.Args()[0] {
 	case "edit":
-		path := getSubArguments(subArgs, ALLARGS)
-		edit.Edit(path)
+		fmt.Println(" edit is NOT available.")
+		//path := getSubArguments(subArgs, ALLARGS)
+		//edit.Edit(path)
 	case "ls", "find":
 		path := getSubArguments(subArgs, ALLARGS)
 		show.Find(path)
@@ -133,8 +127,9 @@ func main() {
 		path := getSubArguments(subArgs, ALLARGS)
 		edit.RemovePassword(path)
 	case "rename":
-		path := getSubArguments(subArgs, ALLARGS)
-		edit.Rename(path)
+		fmt.Println(" rename is NOT available.")
+		//path := getSubArguments(subArgs, ALLARGS)
+		//edit.Rename(path)
 	case "help", "usage":
 		printUsage()
 	case "version":

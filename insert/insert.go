@@ -76,8 +76,8 @@ func Password(name string) {
 	si := pio.SiteInfo{
 		PubKey:     *pub,
 		Name:       name,
-		UserSealed: userSealed,
 		PassSealed: passSealed,
+		UserSealed: userSealed,
 	}
 
 	err = si.AddSite()
