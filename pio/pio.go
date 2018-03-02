@@ -305,42 +305,6 @@ func ReadConfig() (c ConfigFile, err error) {
 	return
 }
 
-// NO, PromptPass clone is unnecessary; PromptPass is generic; 
-//   just rename it, e.g., PromptSecret 
-//   handle user/pass terminal input @ insert.go and show.go; 
-//   make siteSecret a func, taking user/pass str as param 
-
-// PromptUser will prompt user for a site username, by terminal.
-//   DEV: want to secure username and password, so must add methods,
-//   or an interface or whatever, and muck with several files.
-//   presently just cloning PromptPass function.
-/*
-func PromptUser(prompt string) (pass string, err error) {
-	// Make a copy of STDIN's state to restore afterward
-	fd := int(os.Stdin.Fd())
-	oldState, err := terminal.GetState(fd)
-	if err != nil {
-		panic("Could not get state of terminal: " + err.Error())
-	}
-	defer terminal.Restore(fd, oldState)
-
-	// Restore STDIN in the event of a signal interuption
-	sigch := make(chan os.Signal, 1)
-	signal.Notify(sigch, os.Interrupt)
-	go func() {
-		for _ = range sigch {
-			terminal.Restore(fd, oldState)
-			os.Exit(1)
-		}
-	}()
-
-	fmt.Printf("%s: ", prompt)
-	passBytes, err := terminal.ReadPassword(fd)
-	fmt.Println("")
-	return string(passBytes), err
-}
-*/
-
 // PromptPass will prompt user for site password, by terminal.
 func PromptPass(prompt string) (pass string, err error) {
 	// Make a copy of STDIN's state to restore afterward

@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
+	"github.com/f06ybeast/passgo/pio"
 )
 
 type searchType int

@@ -9,8 +9,8 @@ import (
 	"log"
 
 	"github.com/ejcx/passgo/pc"
-	"github.com/f06ybeast/passgo/pio"
 	"github.com/ejcx/passgo/sync"
+	"github.com/f06ybeast/passgo/pio"
 	"golang.org/x/crypto/nacl/box"
 )
 
@@ -22,12 +22,41 @@ const (
 
 // f06ybeast mod :: handle username AND password insert/show
 // `func siteSecret` replaces short decl `sitePass, err`
-func siteSecret(name, s string) (secret string) {
-	s, err := pio.PromptPass(fmt.Sprintf("Enter " + s + " for %s", name))
+// THAT was easy [TODO similarly @ show.go, edit.go]  ...
+// *************************************************************************
+func siteSecret(name, cred string) (secret string) {
+	secret, err := pio.PromptPass(fmt.Sprintf("Enter "+cred+" for %s", name))
 	if err != nil {
-		log.Fatalf("Could not get " + s + " for site: %s", err.Error())
+		log.Fatalf("Could not get "+cred+" for site :: ", err.Error())
 	}
 	return secret
+	// ... but WANT USERNAME ENTRY TO SHOW AS USER TYPES IT
+	// *************************************************************************
+	//   MUST use this DUPLICATE err handling and return statements
+	//   in if/else because of Golang's moronic scoping of `if` block
+	//   combined with their superglued `result, err :=` idiom, which
+	//   means NEITHER such vars can ever be accessed outside any `if` block.
+	//   Workarounds involve declaring a bunch of variables; hideous.
+	//
+	//   WORSE, shis compiles, but now none of the prompts show up @ stdout;
+	//   another wonderful gift from Golang's `if` scoping?
+	// *************************************************************************
+	/*
+		if name == "password" {
+			secret, err := pio.PromptPass(fmt.Sprintf("Enter "+cred+" for %s", name))
+			if err != nil {
+				log.Fatalf("Could not get "+cred+" for site :: ", err.Error())
+			}
+			return secret
+		} else {
+			fmt.Sprintf("Enter "+cred+" for %s", name)
+			_, err := fmt.Scanln(&secret)
+			if err != nil {
+				log.Fatalf("Could not get "+cred+" for site :: ", err.Error())
+			}
+			return secret
+		}
+	*/
 }
 
 // Password is used to add a new password entry to the vault.
