@@ -107,23 +107,25 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, co
 				if err != nil {
 					log.Fatalf("Could not decrypt file bytes: %s", err.Error())
 				}
-			} else { // pc.go fails @ pc.OpenAsym ; userpass branch mod
+			} else {
 				unsealedUser, err = pc.OpenAsym(site.UserSealed, &site.PubKey, &masterPrivKey)
 				if err != nil {
-					log.Println("Could not decrypt site password.")
+					log.Println("Could not decrypt site USERNAME.")
+					//log.Fatalf("FAILed @ unsealedUser :: %v", site.UserSealed)
 					continue
 				}
 				unsealedPass, err = pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
 				if err != nil {
-					log.Println("Could not decrypt site password.")
+					log.Println("Could not decrypt site PASSWORD.")
+					//log.Fatalf("FAILed @ unsealedPass :: %v", site.PassSealed)
 					continue
 				}
 			}
+			fmt.Printf(" Site: %s", string(site))
+			fmt.Printf(" User: %s", string(unsealedUser))
 			if copyPassword {
-				fmt.Println(string(unsealedUser))
 				pio.ToClipboard(string(unsealedPass))
 			} else {
-				fmt.Println(string(unsealedUser))
 				fmt.Println(string(unsealedPass))
 			}
 		}
@@ -197,12 +199,14 @@ func SearchAll(st searchType, searchFor string) (allSites map[string][]pio.SiteI
 			group = string(s.Name[:slashIndex])
 		}
 		name := s.Name[slashIndex+1:]
+		user := s.UserSealed
 		pass := s.PassSealed
 		pubKey := s.PubKey
 		isFile := s.IsFile
 		filename := s.FileName
 		si := pio.SiteInfo{
 			Name:       name,
+			UserSealed: user,
 			PassSealed: pass,
 			PubKey:     pubKey,
 			IsFile:     isFile,

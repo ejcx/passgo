@@ -89,7 +89,13 @@ func SealAsym(message []byte, pub *[32]byte, priv *[32]byte) (out []byte, err er
 // OpenAsym wraps the AEAD interface box.Open
 func OpenAsym(ciphertext []byte, pub, priv *[32]byte) (out []byte, err error) {
 	var nonce [24]byte
-	copy(nonce[:], ciphertext[:24]) // userpass branch mod FAILs here on `passgo show ...`
+	/* DEBUG; hadn't added `UserSealed` to `sites` @ pio.go, so `cryptext` slice failed
+	fmt.Printf("FAILs @ OpenAsym - ciphertext[:24] \n%v\n", ciphertext[:24])
+	fmt.Printf("FAILs @ OpenAsym - nonce[:] \n%v\n", nonce[:])
+	var input string
+	fmt.Scanln(&input)
+	*/
+	copy(nonce[:], ciphertext[:24])
 	out, ok := box.Open(out[:0], ciphertext[24:], &nonce, pub, priv)
 	if !ok {
 		err = errors.New("Unable to decrypt message")
