@@ -6,7 +6,6 @@
 ## Mods/Settings:  
 - Handle/encrypt both username and password, per site.  
 @ `passgo show ...`, site/user displayed [stdout], and pass sent to clipboard.  
-  Mods required @ insert, show, edit operations  
 -- WIP; successfully modified `insert` & `show`. Disabled `edit` & `rename`,   
 which are NOT yet available and would corrupt the encrypted store [json] if used.  
   Modified files: `passgo.go, insert.go, show.go, pio.go, pc.go`;  
