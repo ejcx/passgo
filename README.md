@@ -8,7 +8,7 @@
   Mods required @ insert, show, edit operations  
 -- WIP; successfully modified: insert & show   
   Modified files: `passgo.go, insert.go, show.go, pio.go, pc.go`  
-  Import paths modified accordingly, from `/ejcx/` to `/f06ybeast/`  
+  `import` paths modified accordingly, from `/ejcx/` to `/f06ybeast/`  
 - `passgo.go` @ `usage = ...` tabs converted to spaces [1tab = 2sp]; added `insertfile` usage  
 - `passgo.go` @ line 27, set flag to `true`; password sent to clipboard instead of stdout  
    `copyPass = flag.Bool("copy", true,...`   
