@@ -11,11 +11,11 @@ import (
 	"github.com/ejcx/passgo/edit"
 	"github.com/ejcx/passgo/generate"
 	"github.com/ejcx/passgo/initialize"
+	"github.com/ejcx/passgo/sync"
 	"github.com/f06ybeast/passgo/insert"
-	"github.com/ejcx/passgo/pc"
+	"github.com/f06ybeast/passgo/pc"
 	"github.com/f06ybeast/passgo/pio"
 	"github.com/f06ybeast/passgo/show"
-	"github.com/ejcx/passgo/sync"
 )
 
 const (
