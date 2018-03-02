@@ -38,7 +38,7 @@ func siteSecret(name, cred string) (secret string) {
 	//   means NEITHER such vars can ever be accessed outside any `if` block.
 	//   Workarounds involve declaring a bunch of variables; hideous.
 	//
-	//   WORSE, shis compiles, but now none of the prompts show up @ stdout;
+	//   WORSE, this compiles, but now none of the prompts show up @ stdout;
 	//   another wonderful gift from Golang's `if` scoping?
 	// *************************************************************************
 	/*
