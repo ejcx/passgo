@@ -4,12 +4,13 @@
 ## Golang package author @ [`github.com/ejcx`](https://github.com/ejcx)  
 
 ## Mods/Settings:  
-- Handle both username and password, per site; `userpass` branch  
+- Handle both username and password, per site; `userpass` branch;  
+  mods required @ passgo.go, pio.go, insert.go, show.go, and edit.go   
+
 -- WIP; `insert.go` works, but `show.go` fails @ `pc.go:92` [`pc.OpenAsym`] 
 - `passgo.go` @ `usage = ...` tabs converted to spaces [1tab = 2sp]; added `insertfile` usage  
 - `passgo.go` @ line 27, set flag to `true`; password sent to clipboard instead of stdout  
    `copyPass = flag.Bool("copy", true,...`   
-mods required @ passgo.go, pio.go, insert.go, show.go, and edit.go   
   
 ### Issues: 
 - panic on `passgo show ...` @ mintty terminals of   
