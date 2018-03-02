@@ -1,7 +1,7 @@
 # passgo [fork [`github.com/ejcx/passgo`](https://github.com/ejcx/passgo)]
 ## A nifty user/pass and file manager utilizing [AEAD](https://en.wikipedia.org/wiki/Authenticated_encryption#Authenticated_encryption_with_associated_data)/[NaCl](https://godoc.org/golang.org/x/crypto/nacl) encryption.  
 
-## Golang package author @ [`github.com/ejcx`](https://github.com/ejcx)  
+## `Golang` package author @ [`github.com/ejcx`](https://github.com/ejcx)  
 
 ## Mods/Settings:  
 - Handle both username and password, per site; `userpass` branch;  Work-in-Progress
