@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ejcx/passgo/pc"
+	"github.com/f06ybeast/passgo/pc"
 	"github.com/f06ybeast/passgo/pio"
 )
 
@@ -84,7 +84,8 @@ func ListAll() {
 func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, copyPassword bool) {
 	for _, siteList := range allSites {
 		for _, site := range siteList {
-			var unsealed []byte
+			var unsealedUser []byte
+			var unsealedPass []byte
 			var err error
 			if site.IsFile {
 				fileDir, err := pio.GetEncryptedFilesDir()
@@ -102,22 +103,28 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, co
 				if err != nil {
 					log.Fatalf("Could not read encrypted file: %s", err.Error())
 				}
-				unsealed, err = pc.OpenAsym(fileSealed, &site.PubKey, &masterPrivKey)
+				unsealedPass, err = pc.OpenAsym(fileSealed, &site.PubKey, &masterPrivKey)
 				if err != nil {
 					log.Fatalf("Could not decrypt file bytes: %s", err.Error())
 				}
-
-			} else {
-				unsealed, err = pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
+			} else { // pc.go fails @ pc.OpenAsym ; userpass branch mod
+				unsealedUser, err = pc.OpenAsym(site.UserSealed, &site.PubKey, &masterPrivKey)
+				if err != nil {
+					log.Println("Could not decrypt site password.")
+					continue
+				}
+				unsealedPass, err = pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
 				if err != nil {
 					log.Println("Could not decrypt site password.")
 					continue
 				}
 			}
 			if copyPassword {
-				pio.ToClipboard(string(unsealed))
+				fmt.Println(string(unsealedUser))
+				pio.ToClipboard(string(unsealedPass))
 			} else {
-				fmt.Println(string(unsealed))
+				fmt.Println(string(unsealedUser))
+				fmt.Println(string(unsealedPass))
 			}
 		}
 	}

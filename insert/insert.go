@@ -14,6 +14,7 @@ import (
 	"golang.org/x/crypto/nacl/box"
 )
 
+// Useless? `PassPrompt` isn't used anywhere.
 const (
 	// PassPrompt is the string formatter that should be used
 	// when prompting for a password.
@@ -25,38 +26,17 @@ const (
 // THAT was easy [TODO similarly @ show.go, edit.go]  ...
 // *************************************************************************
 func siteSecret(name, cred string) (secret string) {
-	secret, err := pio.PromptPass(fmt.Sprintf("Enter "+cred+" for %s", name))
+	var err error
+	if cred == "PASSWORD" {
+		secret, err = pio.PromptPass(fmt.Sprintf("Enter "+cred+" for %s", name))
+	} else {
+		fmt.Printf("Enter "+cred+" for %s: ", name)
+		_, err = fmt.Scanln(&secret)
+	}
 	if err != nil {
 		log.Fatalf("Could not get "+cred+" for site :: ", err.Error())
 	}
 	return secret
-	// ... but WANT USERNAME ENTRY TO SHOW AS USER TYPES IT
-	// *************************************************************************
-	//   MUST use this DUPLICATE err handling and return statements
-	//   in if/else because of Golang's moronic scoping of `if` block
-	//   combined with their superglued `result, err :=` idiom, which
-	//   means NEITHER such vars can ever be accessed outside any `if` block.
-	//   Workarounds involve declaring a bunch of variables; hideous.
-	//
-	//   WORSE, this compiles, but now none of the prompts show up @ stdout;
-	//   another wonderful gift from Golang's `if` scoping?
-	// *************************************************************************
-	/*
-		if name == "password" {
-			secret, err := pio.PromptPass(fmt.Sprintf("Enter "+cred+" for %s", name))
-			if err != nil {
-				log.Fatalf("Could not get "+cred+" for site :: ", err.Error())
-			}
-			return secret
-		} else {
-			fmt.Sprintf("Enter "+cred+" for %s", name)
-			_, err := fmt.Scanln(&secret)
-			if err != nil {
-				log.Fatalf("Could not get "+cred+" for site :: ", err.Error())
-			}
-			return secret
-		}
-	*/
 }
 
 // Password is used to add a new password entry to the vault.
@@ -88,8 +68,8 @@ func Password(name string) {
 	// sitePass replaced w/ func siteSecret [above]
 	// sitePass, err := pio.PromptPass(fmt.Sprintf("Enter password for %s", name))
 
-	userSealed, err := pc.SealAsym([]byte(siteSecret(name, "username")), &masterPub, priv)
-	passSealed, err := pc.SealAsym([]byte(siteSecret(name, "password")), &masterPub, priv)
+	userSealed, err := pc.SealAsym([]byte(siteSecret(name, "USERNAME")), &masterPub, priv)
+	passSealed, err := pc.SealAsym([]byte(siteSecret(name, "PASSWORD")), &masterPub, priv)
 
 	si := pio.SiteInfo{
 		PubKey:     *pub,
