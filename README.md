@@ -9,7 +9,7 @@
 NOT yet available and would corrupt the encrypted (`json`) vault if used.  
 @ `passgo show ...`, site/user displayed (stdout), and password sent to clipboard.  
 Modified files: `passgo.go`, `insert.go`, `show.go`, `pio.go`, and `pc.go`;  
-go `import` paths modified accordingly, from `/ejcx/` to `/f06ybeast/`  
+Go `import` paths modified accordingly, from `/ejcx/` to `/f06ybeast/`  
 - Added `passgo clear` action; overwrites and clears clipboard.  
 - Converted tabs to spaces on info @ `passgo usage`  
 - Added `insertfile` action-info @ `passgo usage`   
