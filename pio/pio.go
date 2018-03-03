@@ -333,7 +333,7 @@ func PromptPass(prompt string) (pass string, err error) {
 
 // Prompt will prompt a user for regular data from stdin.
 func Prompt(prompt string) (s string, err error) {
-	fmt.Printf("%s", prompt)
+	fmt.Printf("%s: ", prompt)
 	stdin := bufio.NewReader(os.Stdin)
 	l, _, err := stdin.ReadLine()
 	return string(l), err

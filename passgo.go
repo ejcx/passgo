@@ -36,7 +36,7 @@ var (
 	usage = `Usage:
   passgo
     Print the site and file names of the vault.
-  passgo show site|file
+  passgo show site-path|file-path
     If site, print the username, and send password to clipboard.
     If file, send file contents to clipboard.
   passgo init
@@ -49,16 +49,14 @@ var (
     Adding a file works almost the same as insert. Instead it has an extra 
     argument. The file that you want to add to your vault is the final 
     argument. Grouping works the same way with insertfile as insert.
-  passgo generate length=24
+  passgo generate|clear [length]
     Prints a randomly generated password. The length of this password defaults
     to 24. If a very short length is specified, the generated password will be
     longer than desired and will contain a upper-case, lower-case, symbol, and
-    digit.
-  passgo find site-path
+    digit. Pastes to clipboard. On 'clear', it then clears the clipboard.
+  passgo find|ls site-path
     Prints all sites that contain the site-path. Used to print just one group
     or all sites that contain a certain word in the group or name.
-  passgo ls site-path
-    An alias for the find subcommand.
   passgo remove|rm site-path
     Remove a site from the password vault by specifying the entire site-path.
   passgo removefile|rmfile site-path
@@ -107,14 +105,22 @@ func main() {
 	case "ls", "find":
 		path := getSubArguments(subArgs, ALLARGS)
 		show.Find(path)
-	case "generate":
+	case "generate", "clear":
 		pwlenStr := getSubArguments(subArgs, 0)
 		pwlen, err := strconv.Atoi(pwlenStr)
 		if err != nil {
 			pwlen = -1
 		}
 		pass := generate.Generate(pwlen)
+		if flag.Args()[0] == "clear" { // clipboard:
+			pio.ToClipboard(pass) //  overwrite
+			pio.ToClipboard("")   //  clear
+			fmt.Println("Clipboard cleared.")
+			break
+		}
 		fmt.Println(pass)
+		fmt.Println("\n@ Clipboard")
+		pio.ToClipboard(pass)
 	case "init":
 		initialize.Init()
 	case "insert":

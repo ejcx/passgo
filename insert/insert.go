@@ -14,26 +14,13 @@ import (
 	"golang.org/x/crypto/nacl/box"
 )
 
-// Useless? `PassPrompt` isn't used anywhere.
-/*
-const (
-	// PassPrompt is the string formatter that should be used
-	// when prompting for a password.
-	PassPrompt = "Enter password for %s"
-)
-*/
-
-// f06ybeast mod :: handle username AND password insert/show
-// `func siteSecret` replaces short decl `sitePass, err`
-// THAT was easy [TODO similarly @ show.go, edit.go]  ...
-// *************************************************************************
+// handle username AND password insert/show; func replaces `sitePass, err`
 func siteSecret(name, cred string) (secret string) {
 	var err error
 	if cred == "PASSWORD" {
 		secret, err = pio.PromptPass(fmt.Sprintf("Enter "+cred+" for %s", name))
 	} else {
-		fmt.Printf("Enter "+cred+" for %s: ", name)
-		_, err = fmt.Scanln(&secret)
+		secret, err = pio.Prompt(fmt.Sprintf("Enter "+cred+" for %s", name))
 	}
 	if err != nil {
 		log.Fatalf("Could not get "+cred+" for site :: ", err.Error())
@@ -66,9 +53,6 @@ func Password(name string) {
 	}
 
 	masterPub := c.MasterPubKey
-
-	// sitePass replaced w/ func siteSecret [above]
-	// sitePass, err := pio.PromptPass(fmt.Sprintf("Enter password for %s", name))
 
 	userSealed, err := pc.SealAsym([]byte(siteSecret(name, "USERNAME")), &masterPub, priv)
 	passSealed, err := pc.SealAsym([]byte(siteSecret(name, "PASSWORD")), &masterPub, priv)

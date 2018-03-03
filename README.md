@@ -10,10 +10,10 @@
 which are NOT yet available and would corrupt the encrypted store [json] if used.  
   Modified files: `passgo.go, insert.go, show.go, pio.go, pc.go`;  
   `import` paths modified accordingly, from `/ejcx/` to `/f06ybeast/`  
-- `passgo.go` @ `usage = ...` tabs converted to spaces [1tab = 2sp]; added `insertfile` usage  
-- `passgo.go` @ line 27, set flag to `true`; password sent to clipboard instead of stdout  
-   `copyPass = flag.Bool("copy", true,...`   
-  
+- Added `passgo clear` action; overwrites and clears clipboard.  
+- Converted tabs to spaces on info @ `passgo usage`  
+- Added `insertfile` action-info @ `passgo usage`   
+
 ### Issues: 
 - panic on `passgo show ...` @ mintty terminals of   
 MINGW64 and Cygwin projects [Windows 7 x64 OS ];  
