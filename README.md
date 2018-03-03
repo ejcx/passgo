@@ -18,6 +18,5 @@ go `import` paths modified accordingly, from `/ejcx/` to `/f06ybeast/`
 - panic on `passgo show ...` @ mintty terminals of   
 MINGW64 and Cygwin projects (Windows 7 x64 OS);  
 "`panic: Could not get state of terminal: The handle is  invalid.`"  
-@ `pio.go:313, pc.go:122 , show.go:72, passgo.go:154`  
 The culprit appears to be [`terminal.GetState(fd)`](https://github.com/golang/crypto/blob/master/ssh/terminal/util.go#L63) called @ `pio.go`:`PromptPass`  
 -- This is a very particular use case; mintty, on an almost obsolete version of Windows OS.
