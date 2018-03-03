@@ -3,7 +3,7 @@
 
 ## Golang package author @ [`github.com/ejcx`](https://github.com/ejcx)  
 
-## Mods/Settings:  
+## Mods/Settings @ This Fork:  
 - Handle/encrypt both username and password, per site.  
 @ `insert` & `show` actions. Disabled `edit` & `rename` actions, which are   
 NOT yet available and would corrupt the encrypted (`json`) vault if used.  
