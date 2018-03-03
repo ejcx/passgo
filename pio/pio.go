@@ -53,6 +53,7 @@ type ConfigFile struct {
 type SiteInfo struct {
 	PubKey     [32]byte
 	PassSealed []byte
+	UserSealed []byte
 	Name       string
 	FileName   string
 	IsFile     bool
@@ -304,7 +305,7 @@ func ReadConfig() (c ConfigFile, err error) {
 	return
 }
 
-// PromptPass will prompt user's for a password by terminal.
+// PromptPass will prompt user for site password, by terminal.
 func PromptPass(prompt string) (pass string, err error) {
 	// Make a copy of STDIN's state to restore afterward
 	fd := int(os.Stdin.Fd())
@@ -332,7 +333,7 @@ func PromptPass(prompt string) (pass string, err error) {
 
 // Prompt will prompt a user for regular data from stdin.
 func Prompt(prompt string) (s string, err error) {
-	fmt.Printf("%s", prompt)
+	fmt.Printf("%s: ", prompt)
 	stdin := bufio.NewReader(os.Stdin)
 	l, _, err := stdin.ReadLine()
 	return string(l), err

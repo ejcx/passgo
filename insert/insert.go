@@ -9,16 +9,24 @@ import (
 	"log"
 
 	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/sync"
+	"github.com/f06ybeast/passgo/pio"
 	"golang.org/x/crypto/nacl/box"
 )
 
-const (
-	// PassPrompt is the string formatter that should be used
-	// when prompting for a password.
-	PassPrompt = "Enter password for %s"
-)
+// handle username AND password insert/show; func replaces `sitePass, err`
+func siteSecret(name, cred string) (secret string) {
+	var err error
+	if cred == "PASSWORD" {
+		secret, err = pio.PromptPass(fmt.Sprintf("Enter "+cred+" for %s", name))
+	} else {
+		secret, err = pio.Prompt(fmt.Sprintf("Enter "+cred+" for %s", name))
+	}
+	if err != nil {
+		log.Fatalf("Could not get "+cred+" for site :: ", err.Error())
+	}
+	return secret
+}
 
 // Password is used to add a new password entry to the vault.
 func Password(name string) {
@@ -46,17 +54,14 @@ func Password(name string) {
 
 	masterPub := c.MasterPubKey
 
-	sitePass, err := pio.PromptPass(fmt.Sprintf("Enter password for %s", name))
-	if err != nil {
-		log.Fatalf("Could not get password for site: %s", err.Error())
-	}
-
-	passSealed, err := pc.SealAsym([]byte(sitePass), &masterPub, priv)
+	userSealed, err := pc.SealAsym([]byte(siteSecret(name, "USERNAME")), &masterPub, priv)
+	passSealed, err := pc.SealAsym([]byte(siteSecret(name, "PASSWORD")), &masterPub, priv)
 
 	si := pio.SiteInfo{
 		PubKey:     *pub,
 		Name:       name,
 		PassSealed: passSealed,
+		UserSealed: userSealed,
 	}
 
 	err = si.AddSite()

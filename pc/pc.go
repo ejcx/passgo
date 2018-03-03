@@ -13,7 +13,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/ejcx/passgo/pio"
+	"github.com/f06ybeast/passgo/pio"
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/crypto/nacl/secretbox"
 	"golang.org/x/crypto/scrypt"
@@ -89,6 +89,12 @@ func SealAsym(message []byte, pub *[32]byte, priv *[32]byte) (out []byte, err er
 // OpenAsym wraps the AEAD interface box.Open
 func OpenAsym(ciphertext []byte, pub, priv *[32]byte) (out []byte, err error) {
 	var nonce [24]byte
+	/* DEBUG; hadn't added `UserSealed` to `sites` @ pio.go, so `cryptext` slice failed
+	fmt.Printf("FAILs @ OpenAsym - ciphertext[:24] \n%v\n", ciphertext[:24])
+	fmt.Printf("FAILs @ OpenAsym - nonce[:] \n%v\n", nonce[:])
+	var input string
+	fmt.Scanln(&input)
+	*/
 	copy(nonce[:], ciphertext[:24])
 	out, ok := box.Open(out[:0], ciphertext[24:], &nonce, pub, priv)
 	if !ok {

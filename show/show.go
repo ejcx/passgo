@@ -10,8 +10,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
+	"github.com/f06ybeast/passgo/pc"
+	"github.com/f06ybeast/passgo/pio"
 )
 
 type searchType int
@@ -84,7 +84,8 @@ func ListAll() {
 func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, copyPassword bool) {
 	for _, siteList := range allSites {
 		for _, site := range siteList {
-			var unsealed []byte
+			var unsealedUser []byte
+			var unsealedPass []byte
 			var err error
 			if site.IsFile {
 				fileDir, err := pio.GetEncryptedFilesDir()
@@ -102,22 +103,31 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, co
 				if err != nil {
 					log.Fatalf("Could not read encrypted file: %s", err.Error())
 				}
-				unsealed, err = pc.OpenAsym(fileSealed, &site.PubKey, &masterPrivKey)
+				unsealedPass, err = pc.OpenAsym(fileSealed, &site.PubKey, &masterPrivKey)
 				if err != nil {
 					log.Fatalf("Could not decrypt file bytes: %s", err.Error())
 				}
-
 			} else {
-				unsealed, err = pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
+				unsealedUser, err = pc.OpenAsym(site.UserSealed, &site.PubKey, &masterPrivKey)
 				if err != nil {
-					log.Println("Could not decrypt site password.")
+					log.Println("Could not decrypt site USERNAME.")
+					//log.Fatalf("FAILed @ unsealedUser :: %v", site.UserSealed)
+					continue
+				}
+				unsealedPass, err = pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
+				if err != nil {
+					log.Println("Could not decrypt site PASSWORD.")
+					//log.Fatalf("FAILed @ unsealedPass :: %v", site.PassSealed)
 					continue
 				}
 			}
+			fmt.Printf("\n Site: %s\n", string(site.Name))
+			fmt.Printf(" User: %s\n", string(unsealedUser))
 			if copyPassword {
-				pio.ToClipboard(string(unsealed))
+				fmt.Println(" Pass: @ Clipboard\n\n")
+				pio.ToClipboard(string(unsealedPass))
 			} else {
-				fmt.Println(string(unsealed))
+				fmt.Printf(" Pass: %s\n\n", string(unsealedPass))
 			}
 		}
 	}
@@ -190,12 +200,14 @@ func SearchAll(st searchType, searchFor string) (allSites map[string][]pio.SiteI
 			group = string(s.Name[:slashIndex])
 		}
 		name := s.Name[slashIndex+1:]
+		user := s.UserSealed
 		pass := s.PassSealed
 		pubKey := s.PubKey
 		isFile := s.IsFile
 		filename := s.FileName
 		si := pio.SiteInfo{
 			Name:       name,
+			UserSealed: user,
 			PassSealed: pass,
 			PubKey:     pubKey,
 			IsFile:     isFile,

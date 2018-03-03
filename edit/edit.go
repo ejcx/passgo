@@ -17,8 +17,8 @@ import (
 	"golang.org/x/crypto/nacl/box"
 
 	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/sync"
+	"github.com/f06ybeast/passgo/pio"
 )
 
 // Remove is used to remove a site entry from the password vault given a path.
@@ -97,6 +97,7 @@ func Rename(path string) {
 			}
 			vault[jj] = pio.SiteInfo{
 				PubKey:     siteInfo.PubKey,
+				UserSealed: siteInfo.UserSealed,
 				PassSealed: siteInfo.PassSealed,
 				Name:       newName,
 			}
@@ -137,6 +138,7 @@ func reencrypt(s pio.SiteInfo, newPass string) pio.SiteInfo {
 	return pio.SiteInfo{
 		PubKey:     *pub,
 		Name:       s.Name,
+		UserSealed: s.UserSealed,
 		PassSealed: passSealed,
 	}
 }
