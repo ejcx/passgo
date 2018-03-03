@@ -11,9 +11,8 @@
 Also added usage-info for the `insertfile` action.  
 - `edit` & `rename` actions disabled; not yet available and would corrupt  
 the encrypted (`json`) vault if used, so use `remove` then `insert` instead.  
-- Package files modified at this fork: `passgo.go`, `insert.go`, `show.go`,  
-`pio.go`, and `pc.go`; Go `import` paths modified accordingly,   
-from `/ejcx/` to `/f06ybeast/` . 
+- Package files modified: `passgo.go`, `insert.go`, `show.go`,`pio.go`, `pc.go` .  
+ Go `import` paths modified accordingly,   from `/ejcx/` to `/f06ybeast/` . 
 
 ### Issues: 
 - panic on `passgo show ...` @ mintty terminals of   
