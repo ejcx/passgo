@@ -4,16 +4,16 @@
 ## Golang package author @ [`github.com/ejcx`](https://github.com/ejcx)  
 
 ## Mods/Settings @ this fork:  
-- @ `insert` & `show` actions, now handle both username and password, per site.   
-- @ `show`, prints site and username, and sends password to clipboard.  
-- @ `clear`, added this action; overwrites and clears clipboard.  
-- @ `usage`, converted tabs to spaces and other minor mods to info, and  
-added `insertfile` action-info.  
-- @ `edit` & `rename` actions, disabled; not yet available and would corrupt  
-the encrypted (`json`) vault if used, so use `remove` then `insert` for those  
-actions instead.   
--- Modified files: `passgo.go`, `insert.go`, `show.go`, `pio.go`, and `pc.go`;  
-Go `import` paths modified accordingly, from `/ejcx/` to `/f06ybeast/` 
+- `insert` & `show` actions now handle both username and password, per site.   
+- `show` action prints site and username, and sends password to clipboard.  
+- `clear` action added; overwrites and clears clipboard.  
+- `usage` action; text tabs converted to spaces, and other minor mods.  
+Also added usage-info for the `insertfile` action.  
+- `edit` & `rename` actions disabled; not yet available and would corrupt  
+the encrypted (`json`) vault if used, so use `remove` then `insert` instead.  
+- Package files modified at this fork: `passgo.go`, `insert.go`, `show.go`,  
+`pio.go`, and `pc.go`; Go `import` paths modified accordingly,   
+from `/ejcx/` to `/f06ybeast/` . 
 
 ### Issues: 
 - panic on `passgo show ...` @ mintty terminals of   
