@@ -11,7 +11,7 @@ NOT yet available and would corrupt the encrypted (`json`) vault if used.
 Modified files: `passgo.go`, `insert.go`, `show.go`, `pio.go`, and `pc.go`;  
 Go `import` paths modified accordingly, from `/ejcx/` to `/f06ybeast/`  
 - Added `passgo clear` action; overwrites and clears clipboard.  
-- Converted tabs to spaces, and other minor mods to info @ `passgo usage`  
+- Converted tabs to spaces, and other minor mods to info, @ `passgo usage`  
 - Added `insertfile` action-info @ `passgo usage`   
 
 ### Issues: 
