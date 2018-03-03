@@ -5,9 +5,9 @@
 
 ## Mods/Settings @ this fork:  
 - @ `insert` & `show` actions, now handle both username and password, per site.   
-- @ `show`, prints site/user; password is sent to clipboard.  
+- @ `show`, prints site and username, and sends password to clipboard.  
 - @ `clear`, added this action; overwrites and clears clipboard.  
-- @ `usage`, converted tabs to spaces, and other minor mods to info, and  
+- @ `usage`, converted tabs to spaces and other minor mods to info, and  
 added `insertfile` action-info.  
 - @ `edit` & `rename` actions, disabled; not yet available and would corrupt  
 the encrypted (`json`) vault if used, so use `remove` then `insert` for those  
