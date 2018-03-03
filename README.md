@@ -5,11 +5,11 @@
 
 ## Mods/Settings:  
 - Handle/encrypt both username and password, per site.  
+@ `insert` & `show` actions. Disabled `edit` & `rename` actions, which are   
+NOT yet available and would corrupt the encrypted (`json`) vault if used.  
 @ `passgo show ...`, site/user displayed (stdout), and password sent to clipboard.  
--- WIP; successfully modified `insert` & `show` actions. Disabled `edit` & `rename` actions,   
-which are NOT yet available and would corrupt the encrypted (`json`) vault if used.  
-  Modified files: `passgo.go, insert.go, show.go, pio.go, pc.go`;  
-  `import` paths modified accordingly, from `/ejcx/` to `/f06ybeast/`  
+Modified files: `passgo.go`, `insert.go`, `show.go`, `pio.go`, and `pc.go`;  
+go `import` paths modified accordingly, from `/ejcx/` to `/f06ybeast/`  
 - Added `passgo clear` action; overwrites and clears clipboard.  
 - Converted tabs to spaces on info @ `passgo usage`  
 - Added `insertfile` action-info @ `passgo usage`   
