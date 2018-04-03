@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 
 	"github.com/atotto/clipboard"
-
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -53,6 +52,7 @@ type ConfigFile struct {
 type SiteInfo struct {
 	PubKey     [32]byte
 	PassSealed []byte
+	UserSealed []byte
 	Name       string
 	FileName   string
 	IsFile     bool
@@ -61,6 +61,8 @@ type SiteInfo struct {
 // SiteFile represents the entire passgo password store.
 type SiteFile []SiteInfo
 
+// PassFileDirExists is used to determine if the passgo
+// encrypted-files directory in the user's home directory exists.
 func PassFileDirExists() (bool, error) {
 	d, err := GetEncryptedFilesDir()
 	if err != nil {
@@ -157,8 +159,8 @@ func GetConfigPath() (p string, err error) {
 	return
 }
 
-// GetFilesDir is used to get the directory that we store
-// encrypted files in.
+// GetEncryptedFilesDir is used to get the directory
+// that we store encrypted files in.
 func GetEncryptedFilesDir() (p string, err error) {
 	d, err := GetPassDir()
 	if err == nil {
@@ -304,7 +306,33 @@ func ReadConfig() (c ConfigFile, err error) {
 	return
 }
 
-// PromptPass will prompt user's for a password by terminal.
+// Creds is used to hold plaintext site username and password accepted from stdin.
+type Creds struct {
+	User, Pass string
+}
+
+// PromptCreds is used to prompt user for username and password from stdin.
+func PromptCreds(name string) Creds {
+	var err error
+	s := Creds{}
+	s.User, err = Prompt(fmt.Sprintf("Enter username for %s", name))
+	if err != nil {
+		log.Fatalf("Could not get username for site :: %s", err.Error())
+	}
+	if s.User == "" {
+		log.Fatalln("A username is REQUIRED.")
+	}
+	s.Pass, err = PromptPass(fmt.Sprintf("Enter password for %s", name))
+	if err != nil {
+		log.Fatalf("Could not get password for site :: %s", err.Error())
+	}
+	if s.Pass == "" {
+		log.Fatalln("A password is REQUIRED.")
+	}
+	return s
+}
+
+// PromptPass will prompt user for site password, by terminal.
 func PromptPass(prompt string) (pass string, err error) {
 	// Make a copy of STDIN's state to restore afterward
 	fd := int(os.Stdin.Fd())
@@ -330,9 +358,9 @@ func PromptPass(prompt string) (pass string, err error) {
 	return string(passBytes), err
 }
 
-// Prompt will prompt a user for regular data from stdin.
+// Prompt will prompt user for regular data from stdin.
 func Prompt(prompt string) (s string, err error) {
-	fmt.Printf("%s", prompt)
+	fmt.Printf("%s: ", prompt)
 	stdin := bufio.NewReader(os.Stdin)
 	l, _, err := stdin.ReadLine()
 	return string(l), err

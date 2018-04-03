@@ -4,24 +4,17 @@ package insert
 import (
 	"crypto/rand"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 
 	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/sync"
+	"github.com/f06ybeast/passgo/pio"
 	"golang.org/x/crypto/nacl/box"
 )
 
-const (
-	// PassPrompt is the string formatter that should be used
-	// when prompting for a password.
-	PassPrompt = "Enter password for %s"
-)
-
-// Password is used to add a new password entry to the vault.
-func Password(name string) {
+// Insert is used to insert a new site entry into the vault.
+func Insert(name string) {
 	var c pio.ConfigFile
 	pub, priv, err := box.GenerateKey(rand.Reader)
 	if err != nil {
@@ -44,19 +37,16 @@ func Password(name string) {
 		log.Fatalf("Could not unmarshal config file contents: %s", err.Error())
 	}
 
+	s := pio.PromptCreds(name)
 	masterPub := c.MasterPubKey
-
-	sitePass, err := pio.PromptPass(fmt.Sprintf("Enter password for %s", name))
-	if err != nil {
-		log.Fatalf("Could not get password for site: %s", err.Error())
-	}
-
-	passSealed, err := pc.SealAsym([]byte(sitePass), &masterPub, priv)
+	userSealed, err := pc.SealAsym([]byte(s.User), &masterPub, priv)
+	passSealed, err := pc.SealAsym([]byte(s.Pass), &masterPub, priv)
 
 	si := pio.SiteInfo{
 		PubKey:     *pub,
 		Name:       name,
 		PassSealed: passSealed,
+		UserSealed: userSealed,
 	}
 
 	err = si.AddSite()
