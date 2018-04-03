@@ -8,8 +8,8 @@ import (
 	"os"
 
 	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/sync"
+	"github.com/f06ybeast/passgo/pio"
 	"golang.org/x/crypto/nacl/box"
 )
 

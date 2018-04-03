@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ejcx/passgo/edit"
 	"github.com/ejcx/passgo/generate"
-	"github.com/ejcx/passgo/initialize"
-	"github.com/ejcx/passgo/insert"
 	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
-	"github.com/ejcx/passgo/show"
 	"github.com/ejcx/passgo/sync"
+	"github.com/f06ybeast/passgo/edit"
+	"github.com/f06ybeast/passgo/initialize"
+	"github.com/f06ybeast/passgo/insert"
+	"github.com/f06ybeast/passgo/pio"
+	"github.com/f06ybeast/passgo/show"
 )
 
 const (
@@ -24,70 +24,67 @@ const (
 
 var (
 	// copyPass indicates that the shown password should be copied to the clipboard.
-	copyPass = flag.Bool("copy", false, "If true, copy password to clipboard instead of displaying it")
+	copyPass = flag.Bool("copy", true, "If true, copy password to clipboard instead of displaying it")
 
 	version = `======================================
-= passgo: v1.0                       =
-= The simple golang password and     =
-= file manager                       =
+= passgo v1.04 (f06ybeast mod)       =
+= user/pass and file manager         =
+= with AEAD/NaCl encryption          =
 =                                    =
-= Twiinsen Security                  =
 = evan@twiinsen.com                  =
-= https://twiinsen.com/passgo        =
+= https://github.com/ejcx/passgo     =
 ======================================`
 	usage = `Usage:
-	passgo
-		Print the contents of the vault.
-	passgo show site-path
-		Print the password of a passgo entry.
-	passgo init
-		Initialize the .passgo directory, and generate your secret keys.
-	passgo insert site-path
-		Add a site to your password store. This site can optionally be a part
-		of a group by prepending a group name and slash to the site name.
-		Will prompt for confirmation when a site path is not unique.
-		passgo
-	passgo rename site-path
-		Rename an entry in the password vault.
-	passgo edit site-path
-		Change the password of a site in the vault.
-	passgo generate length=24
-		Prints a randomly generated password. The length of this password defaults
-		to 24. If a very short length is specified, the generated password will be
-		longer than desired and will contain a upper-case, lower-case, symbol, and
-		digit.
-	passgo find site-path
-		Prints all sites that contain the site-path. Used to print just one group
-		or all sites that contain a certain word in the group or name.
-	passgo ls site-path
-		An alias for the find subcommand.
-	passgo remove site-path
-		Remove a site from the password vault by specifying the entire site-path.
-	passgo removefile site-path
-		Remove a file from the vault by specifying the entire file-path.
-	passgo rm site-path
-		An alias for remove.
-	passgo rmfile site-path
-		An alias for removefile.
-	passgo pull
-		Pull will perform a git pull and sync the changes in the remote git
-		repository with your local repo.
-	passgo push
-		Push will perform a git push to sync your changes with your remote
-		git repository.
-	passgo remote remote-url
-		Remote is used to set the remote repository url. This is the repository
-		that your sites will be pushed to and pulled from.
-	passgo clone remote-url
-		Clone will copy the remote url in to the .passgo directory in your
-		home directory. It will fail if the directory already exists.
-	passgo integrity
-		Update the integrity hash of your password store if you are planning
-		to manually push to the server.
-	passgo usage
-		Print this message!
-	passgo version
-		Print version information
+  passgo
+    Print the site and file names of the vault.
+  passgo show site-path|file-path
+    If site, print the username, and send password to clipboard.
+    If file, send file contents to clipboard.
+  passgo init
+    Initialize the .passgo directory, and generate secret keys.
+  passgo insert site-path
+    Add a site to password store. This site can optionally be a part
+    of a group by prepending a group name and slash to the site name.
+    Will prompt for confirmation when a site path is not unique.
+  passgo insertfile name file-path
+    Adding a file works almost the same as insert. Instead it has an extra 
+    argument. The file that you want to add to your vault is the final 
+    argument. Grouping works the same way with insertfile as insert.
+  passgo rename site-path
+    Rename an entry in the password vault.
+  passgo edit site-path
+    Change the username and password of a site in the vault
+  passgo generate|clear [length]
+    Prints a randomly generated password. The length of this password defaults
+    to 24. If a very short length is specified, the generated password will be
+    longer than desired and will contain a upper-case, lower-case, symbol, and
+    digit. Pastes to clipboard. On 'clear', it then clears the clipboard.
+  passgo find|ls site-path
+    Prints all sites that contain the site-path. Used to print just one group
+    or all sites that contain a certain word in the group or name.
+  passgo remove|rm site-path
+    Remove a site from the password vault by specifying the entire site-path.
+  passgo removefile|rmfile site-path
+    Remove a file from the vault by specifying the entire file-path.
+  passgo pull
+    Pull will perform a git pull and sync the changes in the remote git
+    repository with your local repo.
+  passgo push
+    Push will perform a git push to sync your changes with your remote
+    git repository.
+  passgo remote remote-url
+    Remote is used to set the remote repository url. This is the repository
+    that your sites will be pushed to and pulled from.
+  passgo clone remote-url
+    Clone will copy the remote url in to the .passgo directory in your
+    home directory. It will fail if the directory already exists.
+  passgo integrity
+    Update the integrity hash of your password store if you are planning
+    to manually push to the server.
+  passgo usage|help
+    Print this message!
+  passgo version
+    Print version information
 `
 )
 
@@ -106,25 +103,33 @@ func main() {
 	// subArgs is used by subcommands to retreive only their args.
 	subArgs := flag.Args()[1:]
 	switch flag.Args()[0] {
-	case "edit":
-		path := getSubArguments(subArgs, ALLARGS)
-		edit.Edit(path)
 	case "ls", "find":
 		path := getSubArguments(subArgs, ALLARGS)
 		show.Find(path)
-	case "generate":
+	case "generate", "clear":
 		pwlenStr := getSubArguments(subArgs, 0)
 		pwlen, err := strconv.Atoi(pwlenStr)
 		if err != nil {
 			pwlen = -1
 		}
 		pass := generate.Generate(pwlen)
+		if flag.Args()[0] == "clear" {
+			pio.ToClipboard(pass)
+			pio.ToClipboard("")
+			fmt.Println("Clipboard cleared.")
+			break
+		}
 		fmt.Println(pass)
+		fmt.Println("\n@ Clipboard")
+		pio.ToClipboard(pass)
+	case "edit":
+		path := getSubArguments(subArgs, ALLARGS)
+		edit.Edit(path)
 	case "init":
 		initialize.Init()
 	case "insert":
 		pathName := getSubArguments(subArgs, ALLARGS)
-		insert.Password(pathName)
+		insert.Insert(pathName)
 	case "integrity":
 		pc.GetSitesIntegrity()
 		sync.Commit(sync.IntegrityCommit)
