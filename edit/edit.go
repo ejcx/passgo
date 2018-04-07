@@ -16,9 +16,9 @@ import (
 
 	"golang.org/x/crypto/nacl/box"
 
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/sync"
+	"github.com/f06ybeast/passgo/pc"
+	"github.com/f06ybeast/passgo/pio"
 )
 
 // Remove is used to remove a site entry from the password vault given a path.
@@ -66,18 +66,41 @@ func RemoveFile(path string) {
 	remove(path, true)
 }
 
-// Edit is used to change the password of a site. New keys MUST be generated.
+// Rename will take an vault name and change the name.
+func Rename(path string) {
+	vault := pio.GetVault()
+	for jj, siteInfo := range vault {
+		if siteInfo.Name == path {
+			newName, err := pio.Prompt(fmt.Sprintf("Enter new site name for %s", path))
+			if err != nil {
+				log.Fatalf("Could not get new site name from user: %s", err.Error())
+			}
+			if newName == "" {
+				log.Fatalln("A site name is REQUIRED.")
+			}
+			vault[jj] = pio.SiteInfo{
+				PubKey:     siteInfo.PubKey,
+				UserSealed: siteInfo.UserSealed,
+				PassSealed: siteInfo.PassSealed,
+				Name:       newName,
+			}
+			err = pio.UpdateVault(vault)
+			if err != nil {
+				log.Fatalf("Could not rename %s: %s", path, err)
+			}
+			sync.RenameCommit(path, newName)
+		}
+	}
+}
+
+// Edit is used to change the username and password of a site. New keys MUST be generated.
 func Edit(path string) {
 	vault := pio.GetVault()
 	for jj, siteInfo := range vault {
 		if siteInfo.Name == path {
-			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
-			if err != nil {
-				log.Fatalf("Could not get new password for %s: %s", path, err)
-			}
-			newSiteInfo := reencrypt(siteInfo, newPass)
+			newSiteInfo := reencrypt(siteInfo, pio.PromptCreds(path))
 			vault[jj] = newSiteInfo
-			err = pio.UpdateVault(vault)
+			err := pio.UpdateVault(vault)
 			if err != nil {
 				log.Fatalf("Could not edit %s: %s", path, err)
 			}
@@ -86,31 +109,8 @@ func Edit(path string) {
 	}
 }
 
-// Rename will take an vault name and change the name.
-func Rename(path string) {
-	vault := pio.GetVault()
-	for jj, siteInfo := range vault {
-		if siteInfo.Name == path {
-			newName, err := pio.Prompt(fmt.Sprintf("Enter new site name for %s:", path))
-			if err != nil {
-				log.Fatalf("Could not get new site name from user: %s", err.Error())
-			}
-			vault[jj] = pio.SiteInfo{
-				PubKey:     siteInfo.PubKey,
-				PassSealed: siteInfo.PassSealed,
-				Name:       newName,
-			}
-			err = pio.UpdateVault(vault)
-			if err != nil {
-				log.Fatalf("Could not renmae %s: %s", path, err)
-			}
-			sync.RenameCommit(path, newName)
-		}
-	}
-}
-
 // reencrypt takes in a SiteInfo and will return a new SiteInfo that has been safely reencrypted
-func reencrypt(s pio.SiteInfo, newPass string) pio.SiteInfo {
+func reencrypt(s pio.SiteInfo, site pio.Creds) pio.SiteInfo {
 	var c pio.ConfigFile
 	pub, priv, err := box.GenerateKey(rand.Reader)
 	if err != nil {
@@ -129,14 +129,19 @@ func reencrypt(s pio.SiteInfo, newPass string) pio.SiteInfo {
 		log.Fatalf("Could not unmarshal config file contents for reencrypt: %s", err.Error())
 	}
 	masterPub := c.MasterPubKey
-
-	passSealed, err := pc.SealAsym([]byte(newPass), &masterPub, priv)
+	userSealed, err := pc.SealAsym([]byte(site.User), &masterPub, priv)
+	if err != nil {
+		log.Fatalf("Could not seal new site username: %s", err.Error())
+	}
+	passSealed, err := pc.SealAsym([]byte(site.Pass), &masterPub, priv)
 	if err != nil {
 		log.Fatalf("Could not seal new site password: %s", err.Error())
 	}
+
 	return pio.SiteInfo{
 		PubKey:     *pub,
 		Name:       s.Name,
+		UserSealed: userSealed,
 		PassSealed: passSealed,
 	}
 }

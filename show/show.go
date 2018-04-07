@@ -8,18 +8,19 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
+	"github.com/f06ybeast/passgo/pc"
+	"github.com/f06ybeast/passgo/pio"
 )
 
 type searchType int
 
 var (
-	lastPrefix      = "└──"
-	regPrefix       = "├──"
-	innerPrefix     = "|  "
+	lastPrefix      = "└──" // [U+2514 U+2500...] "BOX DRAWINGS LIGHT UP AND RIGHT", "...LIGHT HORIZONTAL", ...
+	regPrefix       = "├──" // [U+251C U+2500...] "BOX DRAWINGS LIGHT VERTICAL AND RIGHT", ...
+	innerPrefix     = "│  " // [U+2502 U+0020...] "BOX DRAWINGS LIGHT VERTICAL", ...
 	innerLastPrefix = "   "
 )
 
@@ -39,6 +40,7 @@ func init() {
 	if runtime.GOOS == "windows" {
 		lastPrefix = "+--"
 		regPrefix = "+--"
+		innerPrefix = "|  " // [U+007C U+0020...] "VERTICAL LINE", ...
 	}
 }
 
@@ -84,7 +86,8 @@ func ListAll() {
 func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, copyPassword bool) {
 	for _, siteList := range allSites {
 		for _, site := range siteList {
-			var unsealed []byte
+			var unsealedUser []byte
+			var unsealedPass []byte
 			var err error
 			if site.IsFile {
 				fileDir, err := pio.GetEncryptedFilesDir()
@@ -102,60 +105,92 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, co
 				if err != nil {
 					log.Fatalf("Could not read encrypted file: %s", err.Error())
 				}
-				unsealed, err = pc.OpenAsym(fileSealed, &site.PubKey, &masterPrivKey)
+				unsealedPass, err = pc.OpenAsym(fileSealed, &site.PubKey, &masterPrivKey)
 				if err != nil {
 					log.Fatalf("Could not decrypt file bytes: %s", err.Error())
 				}
-
 			} else {
-				unsealed, err = pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
+				unsealedUser, err = pc.OpenAsym(site.UserSealed, &site.PubKey, &masterPrivKey)
 				if err != nil {
-					log.Println("Could not decrypt site password.")
-					continue
+					log.Fatalf("Could not decrypt site username: %s", err.Error())
+				}
+				unsealedPass, err = pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
+				if err != nil {
+					log.Fatalf("Could not decrypt site password: %s", err.Error())
 				}
 			}
+			fmt.Printf("\n Site: %s\n", string(site.Name))
+			fmt.Printf(" User: %s\n", string(unsealedUser))
 			if copyPassword {
-				pio.ToClipboard(string(unsealed))
+				fmt.Printf(" %s\n\n", "Pass: @ Clipboard")
+				pio.ToClipboard(string(unsealedPass))
 			} else {
-				fmt.Println(string(unsealed))
+				fmt.Printf(" Pass: %s\n\n", string(unsealedPass))
 			}
 		}
 	}
 }
 
 func showResults(allSites map[string][]pio.SiteInfo) {
-	fmt.Println(".")
-	counter := 1
-	for group, siteList := range allSites {
-		siteCounter := 1
-		for _, site := range siteList {
-			preGroup := regPrefix
-			preName := innerPrefix + regPrefix
-			if counter == len(allSites) {
-				preGroup = lastPrefix
-				sitePrefix := innerLastPrefix
-				if group == "" {
-					sitePrefix = ""
-				}
-				preName = sitePrefix + regPrefix
-				if siteCounter == len(siteList) {
-					preName = sitePrefix + lastPrefix
-				}
-			} else {
-				if siteCounter == len(siteList) {
-					preName = innerPrefix + lastPrefix
+
+	// Go maps don't sort, so extract the map fields into a slice of a struct
+	type show struct {
+		group string
+		names []string
+	}
+
+	// sort
+
+	sites := make([]show, 0, 3*len(allSites))
+	total := 0
+	for group := range allSites {
+		names := make([]string, 0, len(allSites[group]))
+		for i := range allSites[group] {
+			names = append(names, allSites[group][i].Name)
+			total++
+		}
+		if group == "" {
+			for _, name := range names {
+				sites = append(sites, show{name, []string{name}})
+			}
+		} else {
+			sort.Strings(names)
+			sites = append(sites, show{group, names})
+		}
+	}
+	sort.Slice(sites, func(i, j int) bool {
+		return strings.ToLower(sites[i].group) < strings.ToLower(sites[j].group)
+	})
+
+	// show
+
+	fmt.Printf("  %d\n", total)
+	t := `   `
+	for i, site := range sites {
+		for j, name := range site.names {
+			pG := regPrefix
+			pN := innerPrefix + regPrefix
+
+			if (j + 1) == len(site.names) {
+				pN = innerPrefix + lastPrefix
+			}
+
+			if (i + 1) == len(sites) {
+				pG = lastPrefix
+				if (j + 1) == len(site.names) {
+					pN = innerLastPrefix + lastPrefix
+				} else {
+					pN = innerLastPrefix + regPrefix
 				}
 			}
 
-			if siteCounter == 1 {
-				if group != "" {
-					fmt.Println(preGroup + group)
-				}
+			if j == 0 {
+				fmt.Printf("%s%s%s\n", t, pG, site.group)
 			}
-			fmt.Printf("%s%s\n", preName, site.Name)
-			siteCounter++
+			if site.group != name {
+				fmt.Printf("%s%s%s\n", t, pN, name)
+			}
 		}
-		counter++
 	}
 }
 
@@ -190,12 +225,14 @@ func SearchAll(st searchType, searchFor string) (allSites map[string][]pio.SiteI
 			group = string(s.Name[:slashIndex])
 		}
 		name := s.Name[slashIndex+1:]
+		user := s.UserSealed
 		pass := s.PassSealed
 		pubKey := s.PubKey
 		isFile := s.IsFile
 		filename := s.FileName
 		si := pio.SiteInfo{
 			Name:       name,
+			UserSealed: user,
 			PassSealed: pass,
 			PubKey:     pubKey,
 			IsFile:     isFile,
