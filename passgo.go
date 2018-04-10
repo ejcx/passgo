@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ejcx/passgo/generate"
-	"github.com/ejcx/passgo/initialize"
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/sync"
 	"github.com/f06ybeast/passgo/edit"
+	"github.com/f06ybeast/passgo/generate"
+	"github.com/f06ybeast/passgo/initialize"
 	"github.com/f06ybeast/passgo/insert"
+	"github.com/f06ybeast/passgo/pc"
 	"github.com/f06ybeast/passgo/pio"
 	"github.com/f06ybeast/passgo/show"
+	"github.com/f06ybeast/passgo/sync"
 )
 
 const (
@@ -23,8 +23,8 @@ const (
 )
 
 var (
-	// copyPass indicates that the shown password should be copied to the clipboard.
-	copyPass = flag.Bool("copy", true, "If true, copy password to clipboard instead of displaying it")
+	// copyPass indicates the running state of that flag, `-copy=true|false`; its default is set here.
+	copyPass = flag.Bool("copy", true, "If true, copy password to clipboard instad of displaying it")
 
 	version = `======================================
 = passgo v1.04 (f06ybeast mod)       =
@@ -36,12 +36,15 @@ var (
 ======================================`
 	usage = `Usage:
   passgo
-    Print the site and file names of the vault.
-  passgo show site-path|file-path
+    Print the site and file names of the vault. 
+  passgo init
+    Initialize the vault directory, and generate secret keys.
+    Directory is set per PASSGODIR; defaults to ~/.passgo  
+  passgo show [site-path|file-path]
     If site, print the username, and send password to clipboard.
     If file, send file contents to clipboard.
-  passgo init
-    Initialize the .passgo directory, and generate secret keys.
+    To not use clipboard, use: passgo -copy=false ... 
+    Loop-mode if no path arg; sites per query w/out re-entering master pass. 
   passgo insert site-path
     Add a site to password store. This site can optionally be a part
     of a group by prepending a group name and slash to the site name.
@@ -52,8 +55,12 @@ var (
     argument. Grouping works the same way with insertfile as insert.
   passgo rename site-path
     Rename an entry in the password vault.
-  passgo edit site-path
+    passgo edit site-path
     Change the username and password of a site in the vault
+  passgo remove|rm site-path
+    Remove a site from the password vault by specifying the entire site-path.
+  passgo removefile|rmfile site-path
+    Remove a file from the vault by specifying the entire file-path
   passgo generate|clear [length]
     Prints a randomly generated password. The length of this password defaults
     to 24. If a very short length is specified, the generated password will be
@@ -62,10 +69,6 @@ var (
   passgo find|ls site-path
     Prints all sites that contain the site-path. Used to print just one group
     or all sites that contain a certain word in the group or name.
-  passgo remove|rm site-path
-    Remove a site from the password vault by specifying the entire site-path.
-  passgo removefile|rmfile site-path
-    Remove a file from the vault by specifying the entire file-path.
   passgo pull
     Pull will perform a git pull and sync the changes in the remote git
     repository with your local repo.
@@ -84,7 +87,7 @@ var (
   passgo usage|help
     Print this message!
   passgo version
-    Print version information
+    Print version information.
 `
 )
 
@@ -154,7 +157,7 @@ func main() {
 		repo := getSubArguments(subArgs, 0)
 		sync.Clone(repo)
 	case "show":
-		path := getSubArguments(flag.Args(), 1)
+		path := getSubArguments(subArgs, -1)
 		show.Site(path, *copyPass)
 	case "insertfile":
 		allArgs := getSubArguments(subArgs, ALLARGS)

@@ -178,6 +178,13 @@ func GetSitesFile() (d string, err error) {
 	return
 }
 
+// LogF wraps log.Fatalf; logs and calls os.Exit(1) on error.
+func LogF(e error, msg string) {
+	if e != nil {
+		log.Fatalf("%s: %s", msg, e.Error())
+	}
+}
+
 func (s *SiteInfo) AddFile(fileBytes []byte, filename string) error {
 	encFileDir, err := GetEncryptedFilesDir()
 	if err != nil {
@@ -191,9 +198,7 @@ func (s *SiteInfo) AddFile(fileBytes []byte, filename string) error {
 	fmt.Println(fileDirExists)
 	if !fileDirExists {
 		err = os.Mkdir(encFileDir, 0700)
-		if err != nil {
-			log.Fatalf("Could not create passgo encrypted file dir: %s", err.Error())
-		}
+		LogF(err, "Could not create passgo encrypted file dir")
 	}
 	encFilePath := filepath.Join(encFileDir, filename)
 	err = ioutil.WriteFile(encFilePath, fileBytes, 0666)
@@ -220,9 +225,8 @@ func (s *SiteInfo) AddSite() (err error) {
 // GetVault is used to retrieve the password vault for the user.
 func GetVault() (s SiteFile) {
 	si, err := GetSitesFile()
-	if err != nil {
-		log.Fatalf("Could not get pass dir: %s", err.Error())
-	}
+	LogF(err, "Could not get pass dir")
+
 	siteFileContents, err := ioutil.ReadFile(si)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -231,40 +235,33 @@ func GetVault() (s SiteFile) {
 		log.Fatalf("Could not read site file: %s", err.Error())
 	}
 	err = json.Unmarshal(siteFileContents, &s)
-	if err != nil {
-		log.Fatalf("Could not unmarshal site info: %s", err.Error())
-	}
+	LogF(err, "Could not unmarshal site info")
+
 	return
 }
 
 // GetSiteFileBytes returns the bytes instead of a SiteFile
 func GetSiteFileBytes() (b []byte) {
 	si, err := GetSitesFile()
-	if err != nil {
-		log.Fatalf("Could not get pass dir: %s", err.Error())
-	}
+	LogF(err, "Could not get pass dir")
+
 	f, err := os.OpenFile(si, os.O_RDWR, 0600)
 	defer f.Close()
-	if err != nil {
-		log.Fatalf("Could not open site file: %s", err.Error())
-	}
+	LogF(err, "Could not open site file")
+
 	b, err = ioutil.ReadAll(f)
-	if err != nil {
-		log.Fatalf("Could not read site file: %s", err.Error())
-	}
+	LogF(err, "Could not read site file")
+
 	return
 }
 
 // UpdateVault is used to replace the current password vault.
 func UpdateVault(s SiteFile) (err error) {
 	si, err := GetSitesFile()
-	if err != nil {
-		log.Fatalf("Could not get pass dir: %s", err.Error())
-	}
+	LogF(err, "Could not get pass dir")
+
 	siteFileContents, err := json.MarshalIndent(s, "", "\t")
-	if err != nil {
-		log.Fatalf("Could not marshal site info: %s", err.Error())
-	}
+	LogF(err, "Could not marshal site info")
 
 	// Write the site with the newly appended site to the file.
 	err = ioutil.WriteFile(si, siteFileContents, 0666)
@@ -281,13 +278,11 @@ func (c *ConfigFile) SaveFile() (err error) {
 		}
 	}
 	cBytes, err := json.MarshalIndent(c, "", "\t")
-	if err != nil {
-		log.Fatalf("Could not marshal config file: %s", err.Error())
-	}
+	LogF(err, "Could not marshal config file")
+
 	path, err := GetConfigPath()
-	if err != nil {
-		log.Fatalf("Could not get config file path: %s", err.Error())
-	}
+	LogF(err, "Could not get config file path")
+
 	err = ioutil.WriteFile(path, cBytes, 0666)
 	return
 }
@@ -316,16 +311,14 @@ func PromptCreds(name string) Creds {
 	var err error
 	s := Creds{}
 	s.User, err = Prompt(fmt.Sprintf("Enter username for %s", name))
-	if err != nil {
-		log.Fatalf("Could not get username for site :: %s", err.Error())
-	}
+	LogF(err, "Could not get username for site")
+
 	if s.User == "" {
 		log.Fatalln("A username is REQUIRED.")
 	}
 	s.Pass, err = PromptPass(fmt.Sprintf("Enter password for %s", name))
-	if err != nil {
-		log.Fatalf("Could not get password for site :: %s", err.Error())
-	}
+	LogF(err, "Could not get password for site")
+
 	if s.Pass == "" {
 		log.Fatalln("A password is REQUIRED.")
 	}
@@ -389,14 +382,14 @@ func CreateAttack() error {
 // CheckAttackFile will determine if the attack file exists.
 func CheckAttackFile() {
 	fn, err := GetAttackFileName()
-	if err != nil {
-		log.Fatalf("Could not get home directory: %s", fn)
-	}
+	LogF(err, "Could not get home directory")
+
 	if _, err := os.Stat(fn); err == nil {
 		log.Fatalf("You are under attack. Remove file %s to proceed.", fn)
 	}
 }
 
+// ToClipboard copies string to an OS-specific clipboard utility per vendor package
 func ToClipboard(s string) {
 	if err := clipboard.WriteAll(s); err != nil {
 		log.Fatalf("Could not copy password to clipboard: %s", err.Error())

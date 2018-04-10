@@ -17,11 +17,11 @@ any others that do not abide the user/pass schema.
 - @ Linux (CentOS 7), local/remote; remote clipboard requires X11 (`ssh -X ...`).  
 - @ Windows, `cmd` and `PowerShell` ("terminal" pkg fails on `mintty`; MINGW64/Cygwin).   
 
-### ToDo:
-- Add a loop-mode on `show`, in the absence of a site/file argument, where the master  
-  password is required only once, allowing more site/file requests thereafter. 
+### ~~ToDo~~ DONE:
+- Add a loop-mode to `show.Site`, in the absence of a site/file argument, where the master  
+  password is required only once, allowing more site/file requests thereafter.
 
-### Development notes, per branch 
+### Dev. notes per branch 
 - `userpass1`
   * Add usernames handling to `insert.go` and `show.go`
 - `userpass2`  
@@ -32,5 +32,13 @@ which returns `pio.Creds`, a `struct` used at `edit.Edit` and `insert.Insert`.
   * Minimize dependency (`import ...`) changes of this fork.  
   * `pio.PromptCreds`, which uses `pio.Creds`, is the only fork-dependent part of `pio.go`
   * Source files unaffected: `pc.go`, `synch.go`, `initialize.go`, `generate.go` 
+- `userpass4`  
+  * Shorten user/pass code at `edit.reencrypt` function.
+- `userpass5`
+   * Add loop mode @ `show.Site`
+  * Add `pio.LogF` to replace 3-line pattern where apropos.
+  * Mod `pc.GetMasterKey`; return quickly if no password entered.
+  * Mod `passgo.usage` info.
+
 
 

@@ -5,11 +5,10 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/sync"
+	"github.com/f06ybeast/passgo/pc"
 	"github.com/f06ybeast/passgo/pio"
+	"github.com/f06ybeast/passgo/sync"
 	"golang.org/x/crypto/nacl/box"
 )
 
@@ -17,25 +16,17 @@ import (
 func Insert(name string) {
 	var c pio.ConfigFile
 	pub, priv, err := box.GenerateKey(rand.Reader)
-	if err != nil {
-		log.Fatalf("Could not generate site key: %s", err.Error())
-	}
+	pio.LogF(err, "Could not generate site key")
 
 	config, err := pio.GetConfigPath()
-	if err != nil {
-		log.Fatalf("Could not get config file name: %s", err.Error())
-	}
+	pio.LogF(err, "Could not get config file name")
 
 	// Read the master public key.
 	configContents, err := ioutil.ReadFile(config)
-	if err != nil {
-		log.Fatalf("Could not get config file contents: %s", err.Error())
-	}
+	pio.LogF(err, "Could not get config file contents")
 
 	err = json.Unmarshal(configContents, &c)
-	if err != nil {
-		log.Fatalf("Could not unmarshal config file contents: %s", err.Error())
-	}
+	pio.LogF(err, "Could not unmarshal config file contents")
 
 	s := pio.PromptCreds(name)
 	masterPub := c.MasterPubKey
@@ -50,9 +41,8 @@ func Insert(name string) {
 	}
 
 	err = si.AddSite()
-	if err != nil {
-		log.Fatalf("Could not save site file: %s", err.Error())
-	}
+	pio.LogF(err, "Could not save site file")
+
 	sync.InsertCommit(name)
 }
 
@@ -60,42 +50,28 @@ func Insert(name string) {
 func File(path, filename string) {
 	var c pio.ConfigFile
 	pub, priv, err := box.GenerateKey(rand.Reader)
-	if err != nil {
-		log.Fatalf("Could not generate site key: %s", err.Error())
-	}
+	pio.LogF(err, "Could not generate site key")
 
 	config, err := pio.GetConfigPath()
-	if err != nil {
-		log.Fatalf("Could not get config file name: %s", err.Error())
-	}
+	pio.LogF(err, "Could not get config file name")
 
 	// Read the master public key.
 	configContents, err := ioutil.ReadFile(config)
-	if err != nil {
-		log.Fatalf("Could not get config file contents: %s", err.Error())
-	}
+	pio.LogF(err, "Could not get config file contents")
 
 	err = json.Unmarshal(configContents, &c)
-	if err != nil {
-		log.Fatalf("Could not unmarshal config file contents: %s", err.Error())
-	}
+	pio.LogF(err, "Could not unmarshal config file contents")
 
 	masterPub := c.MasterPubKey
 
 	fileBytes, err := ioutil.ReadFile(filename)
-	if err != nil {
-		log.Fatalf("Could not open and read file that is being encrypted: %s", err.Error())
-	}
+	pio.LogF(err, "Could not open and read file that is being encrypted")
 
 	fileSealed, err := pc.SealAsym([]byte(fileBytes), &masterPub, priv)
-	if err != nil {
-		log.Fatalf("Could not seal file bytes: %s", err.Error())
-	}
+	pio.LogF(err, "Could not seal file bytes")
 
 	tokenFile, err := pc.GenHexString()
-	if err != nil {
-		log.Fatalf("Could not generate random string: %s", err.Error())
-	}
+	pio.LogF(err, "Could not generate random string")
 
 	si := pio.SiteInfo{
 		PubKey:   *pub,
@@ -105,8 +81,7 @@ func File(path, filename string) {
 	}
 
 	err = si.AddFile(fileSealed, tokenFile)
-	if err != nil {
-		log.Fatalf("Could not save site file after file insert: %s", err.Error())
-	}
+	pio.LogF(err, "Could not save site file after file insert")
+
 	sync.InsertCommit(path)
 }

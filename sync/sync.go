@@ -13,8 +13,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
+	"github.com/f06ybeast/passgo/pc"
+	"github.com/f06ybeast/passgo/pio"
 )
 
 var (
@@ -28,17 +28,11 @@ var (
 // Initialize a new git repository in the user's home .passgo directory.
 func Initialize() {
 	d, err := pio.GetPassDir()
-	if err != nil {
-		log.Fatalf("Could not get pass dir: %s", err)
-	}
+	pio.LogF(err, "Could not get pass dir")
 	err = os.Chdir(d)
-	if err != nil {
-		log.Fatalf("Could not change to pass directory: %s", err)
-	}
+	pio.LogF(err, "Could not change to pass directory")
 	_, err = exec.Command("git", "init").Output()
-	if err != nil {
-		log.Fatalf("Could not initialize git repo: %s", err)
-	}
+	pio.LogF(err, "Could not initialize git repo")
 	configFile := pio.ConfigFileName
 	siteFile := pio.SiteFileName
 	_, err = exec.Command("git", "add", configFile).Output()
@@ -50,75 +44,53 @@ func Initialize() {
 		log.Fatalf("Could not add %s: %s", siteFile, err)
 	}
 	_, err = exec.Command("git", "commit", "-m", "Do not pass go do not collect $200.").Output()
-	if err != nil {
-		log.Fatalf("Could not make initial commit: %s", err)
-	}
+	pio.LogF(err, "Could not make initial commit")
 }
 
 // Remote will change where the repository is stored.
-func Remote(remoteUrl string) {
+func Remote(remoteURL string) {
 	d, err := pio.GetPassDir()
-	if err != nil {
-		log.Fatalf("Could not get pass dir: %s", err)
-	}
+	pio.LogF(err, "Could not get pass dir")
 	err = os.Chdir(d)
-	if err != nil {
-		log.Fatalf("Could not change to pass directory: %s", err)
-	}
+	pio.LogF(err, "Could not change to pass directory")
 	// Remove previous remote. If there was none it will throw an error so just
 	// ignore it. If it fails, adding pass-origin will fail.
 	exec.Command("git", "remote", "remove", "pass-origin").Output()
-	_, err = exec.Command("git", "remote", "add", "pass-origin", remoteUrl).Output()
+	_, err = exec.Command("git", "remote", "add", "pass-origin", remoteURL).Output()
 	if err != nil {
-		log.Fatalf("Could not add remote %s: %s", remoteUrl, err)
+		log.Fatalf("Could not add remote %s: %s", remoteURL, err)
 	}
 }
 
 // Push will push your changes to the remote repository.
 func Push() {
 	d, err := pio.GetPassDir()
-	if err != nil {
-		log.Fatalf("Could not get pass dir: %s", err)
-	}
+	pio.LogF(err, "Could not get pass dir")
 	err = os.Chdir(d)
-	if err != nil {
-		log.Fatalf("Could not change to pass directory: %s", err)
-	}
+	pio.LogF(err, "Could not change to pass directory")
 	c := pc.GetSitesIntegrity()
 	err = c.SaveFile()
-	if err != nil {
-		log.Fatalf("Could not save config file with hmac: %s", err)
-	}
+	pio.LogF(err, "Could not save config file with hmac")
 	Commit("Update integrity hash")
 	_, err = exec.Command("git", "push", "-u", "pass-origin", "master").Output()
-	if err != nil {
-		log.Fatalf("Could not push changes: %s", err.Error())
-	}
+	pio.LogF(err, "Could not push changes")
 }
 
 // Pull will get changes from the remote repository.
 func Pull() {
 	d, err := pio.GetPassDir()
-	if err != nil {
-		log.Fatalf("Could not get pass dir: %s", err)
-	}
+	pio.LogF(err, "Could not get pass dir")
 	err = os.Chdir(d)
-	if err != nil {
-		log.Fatalf("Could not change to pass directory: %s", err.Error())
-	}
+	pio.LogF(err, "Could not change to pass directory")
 	_, err = exec.Command("git", "pull").Output()
-	if err != nil {
-		log.Fatalf("Could not pull changes: %s", err)
-	}
+	pio.LogF(err, "Could not pull changes")
 	verifyIntegrity()
 }
 
 // Clone will copy a remote repository to your .passgo directory.
 func Clone(repo string) {
 	passdir, err := pio.GetPassDir()
-	if err != nil {
-		log.Fatalf("Could not get PASSGODIR: %s", err.Error())
-	}
+	pio.LogF(err, "Could not get PASSGODIR")
 	home := filepath.Base(passdir)
 	err = os.Chdir(home)
 	if err != nil {
@@ -155,23 +127,14 @@ func RegenerateCommit(name string) {
 
 func verifyIntegrity() {
 	pass, err := pio.PromptPass(pio.MasterPassPrompt)
-	if err != nil {
-		log.Fatalf("Could not get master password: %s", err)
-	}
+	pio.LogF(err, "Could not get master password")
 	c, err := pio.ReadConfig()
-	if err != nil {
-		log.Fatalf("Could not get config file: %s", err)
-	}
+	pio.LogF(err, "Could not get config file")
 	hmacKey, err := pc.Scrypt([]byte(pass), c.HmacSalt[:])
-	if err != nil {
-		log.Fatalf("Could not generate public key: %s", err)
-	}
-
+	pio.LogF(err, "Could not generate public key")
 	mac := hmac.New(sha256.New, hmacKey[:])
 	_, err = mac.Write(c.MasterPubKey[:])
-	if err != nil {
-		log.Fatalf("Could not write to hmac reader: %s", err)
-	}
+	pio.LogF(err, "Could not write to hmac reader")
 	messageMac := mac.Sum(nil)
 	if !hmac.Equal(messageMac, c.PubKeyHmac) {
 		err = pio.CreateAttack()
@@ -185,14 +148,10 @@ func verifyIntegrity() {
 	vaultBytes := pio.GetSiteFileBytes()
 
 	siteHmacKey, err := pc.Scrypt([]byte(pass), c.SiteHmacSalt[:])
-	if err != nil {
-		log.Fatalf("Could not generate site hmac key: %s", err)
-	}
+	pio.LogF(err, "Could not generate site hmac key")
 	mac = hmac.New(sha256.New, siteHmacKey[:])
 	_, err = mac.Write(vaultBytes)
-	if err != nil {
-		log.Fatalf("Could not write to hmac: %s", err)
-	}
+	pio.LogF(err, "Could not write to hmac")
 	vaultMac := mac.Sum(nil)
 	if !hmac.Equal(vaultMac, c.SiteHmac) {
 		// Created the attacked file.
@@ -206,16 +165,10 @@ func verifyIntegrity() {
 
 func Commit(msg string) {
 	d, err := pio.GetPassDir()
-	if err != nil {
-		log.Fatalf("Could not get pass dir: %s", err)
-	}
+	pio.LogF(err, "Could not get pass dir")
 	err = os.Chdir(d)
-	if err != nil {
-		log.Fatalf("Could not change to pass directory: %s", err)
-	}
+	pio.LogF(err, "Could not change to pass directory")
 	_, err = exec.Command("git", "add", "-u").Output()
-	if err != nil {
-		log.Fatalf("Could not add files for commit: %s", err)
-	}
+	pio.LogF(err, "Could not add files for commit")
 	exec.Command("git", "commit", "-m", msg).Output()
 }

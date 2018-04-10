@@ -3,7 +3,7 @@ package generate
 import (
 	"log"
 
-	"github.com/ejcx/passgo/pc"
+	"github.com/f06ybeast/passgo/pc"
 )
 
 var (

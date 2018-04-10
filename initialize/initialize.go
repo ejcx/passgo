@@ -7,9 +7,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
-	"github.com/ejcx/passgo/sync"
+	"github.com/f06ybeast/passgo/pc"
+	"github.com/f06ybeast/passgo/pio"
+	"github.com/f06ybeast/passgo/sync"
 	"golang.org/x/crypto/nacl/box"
 )
 

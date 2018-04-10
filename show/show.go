@@ -11,7 +11,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ejcx/passgo/pc"
+	"github.com/f06ybeast/passgo/generate"
+	"github.com/f06ybeast/passgo/pc"
 	"github.com/f06ybeast/passgo/pio"
 )
 
@@ -64,16 +65,47 @@ func Find(frag string) {
 	handleErrors(allErrors)
 }
 
-// Site will print out the password of the site that matches path
+// Site takes a path, and prompts for master password, then prints site info for that path.
+// If path is empty-string, then it loops, prompting for path and returning that site's info,
+// allowing access to multiple sites' info without re-entering master password.
 func Site(path string, copyPassword bool) {
-	allSites, allErrors := SearchAll(One, path)
-	if len(allSites) == 0 {
-		fmt.Printf("Site with path %s not found", path)
-		return
+	if path == "" {
+		masterPrivKey := pc.GetMasterKey()
+		for {
+			path, _ = pio.Prompt("Enter site name")
+			if path == "" {
+				if copyPassword {
+					clearClipboard()
+				}
+				break
+			}
+			allSites, allErrors := SearchAll(One, path)
+			if len(allSites) == 0 {
+				fmt.Printf("Site '%s' not found.\n", path)
+				if copyPassword {
+					clearClipboard()
+				}
+			} else {
+				showPassword(allSites, masterPrivKey, copyPassword)
+				handleErrors(allErrors)
+			}
+		}
+	} else {
+		allSites, allErrors := SearchAll(One, path)
+		if len(allSites) == 0 {
+			fmt.Printf("Site with path %s not found", path)
+			return
+		}
+		masterPrivKey := pc.GetMasterKey()
+		showPassword(allSites, masterPrivKey, copyPassword)
+		handleErrors(allErrors)
 	}
-	masterPrivKey := pc.GetMasterKey()
-	showPassword(allSites, masterPrivKey, copyPassword)
-	handleErrors(allErrors)
+}
+
+func clearClipboard() {
+	pio.ToClipboard(generate.Generate(24))
+	pio.ToClipboard("")
+	fmt.Println("Clipboard cleared.")
 }
 
 // ListAll will print out all contents of the vault.
@@ -86,39 +118,30 @@ func ListAll() {
 func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, copyPassword bool) {
 	for _, siteList := range allSites {
 		for _, site := range siteList {
-			var unsealedUser []byte
-			var unsealedPass []byte
+			var unsealedUser, unsealedPass []byte
 			var err error
 			if site.IsFile {
 				fileDir, err := pio.GetEncryptedFilesDir()
-				if err != nil {
-					log.Fatalf("Could not get encrypted file dir when searching vault: %s", err.Error())
-				}
+				pio.LogF(err, "Could not get encrypted file dir when searching vault")
 				filePath := filepath.Join(fileDir, site.FileName)
+
 				f, err := os.OpenFile(filePath, os.O_RDONLY, 0600)
-				if err != nil {
-					log.Fatalf("Could not open encrypted file: %s", err.Error())
-				}
+				pio.LogF(err, "Could not open encrypted file")
 				defer f.Close()
 
 				fileSealed, err := ioutil.ReadAll(f)
-				if err != nil {
-					log.Fatalf("Could not read encrypted file: %s", err.Error())
-				}
+				pio.LogF(err, "Could not read encrypted file")
+
 				unsealedPass, err = pc.OpenAsym(fileSealed, &site.PubKey, &masterPrivKey)
-				if err != nil {
-					log.Fatalf("Could not decrypt file bytes: %s", err.Error())
-				}
+				pio.LogF(err, "Could not decrypt file bytes")
 			} else {
 				unsealedUser, err = pc.OpenAsym(site.UserSealed, &site.PubKey, &masterPrivKey)
-				if err != nil {
-					log.Fatalf("Could not decrypt site username: %s", err.Error())
-				}
+				pio.LogF(err, "Could not decrypt site username")
+
 				unsealedPass, err = pc.OpenAsym(site.PassSealed, &site.PubKey, &masterPrivKey)
-				if err != nil {
-					log.Fatalf("Could not decrypt site password: %s", err.Error())
-				}
+				pio.LogF(err, "Could not decrypt site password")
 			}
+
 			fmt.Printf("\n Site: %s\n", string(site.Name))
 			fmt.Printf(" User: %s\n", string(unsealedUser))
 			if copyPassword {
@@ -132,15 +155,12 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, co
 }
 
 func showResults(allSites map[string][]pio.SiteInfo) {
-
 	// Go maps don't sort, so extract the map fields into a slice of a struct
 	type show struct {
 		group string
 		names []string
 	}
-
 	// sort
-
 	sites := make([]show, 0, 3*len(allSites))
 	total := 0
 	for group := range allSites {
@@ -161,9 +181,7 @@ func showResults(allSites map[string][]pio.SiteInfo) {
 	sort.Slice(sites, func(i, j int) bool {
 		return strings.ToLower(sites[i].group) < strings.ToLower(sites[j].group)
 	})
-
 	// show
-
 	fmt.Printf("  %d\n", total)
 	t := `   `
 	for i, site := range sites {
@@ -174,7 +192,6 @@ func showResults(allSites map[string][]pio.SiteInfo) {
 			if (j + 1) == len(site.names) {
 				pN = innerPrefix + lastPrefix
 			}
-
 			if (i + 1) == len(sites) {
 				pG = lastPrefix
 				if (j + 1) == len(site.names) {
@@ -200,9 +217,7 @@ func showResults(allSites map[string][]pio.SiteInfo) {
 func SearchAll(st searchType, searchFor string) (allSites map[string][]pio.SiteInfo, allErrors []error) {
 	allSites = map[string][]pio.SiteInfo{}
 	siteFile, err := pio.GetSitesFile()
-	if err != nil {
-		log.Fatalf("Could not get site file: %s", err.Error())
-	}
+	pio.LogF(err, "Could not get site file")
 
 	siteFileContents, err := ioutil.ReadFile(siteFile)
 	if err != nil {
@@ -214,9 +229,7 @@ func SearchAll(st searchType, searchFor string) (allSites map[string][]pio.SiteI
 
 	var sites pio.SiteFile
 	err = json.Unmarshal(siteFileContents, &sites)
-	if err != nil {
-		log.Fatalf("Could not unmarshal site file contents: %s", err.Error())
-	}
+	pio.LogF(err, "Could not unmarshal site file contents")
 
 	for _, s := range sites {
 		slashIndex := strings.Index(string(s.Name), "/")

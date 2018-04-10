@@ -13,7 +13,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/ejcx/passgo/pio"
+	"github.com/f06ybeast/passgo/pio"
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/crypto/nacl/secretbox"
 	"golang.org/x/crypto/scrypt"
@@ -120,34 +120,27 @@ func Scrypt(pass, salt []byte) (key [32]byte, err error) {
 // user's passgo config file and decrypt the master private key.
 func GetMasterKey() (masterPrivKey [32]byte) {
 	pass, err := pio.PromptPass(pio.MasterPassPrompt)
-	if err != nil {
-		log.Fatalf("Could not get master password: %s", err.Error())
+	pio.LogF(err, "Could not get master password")
+	if pass == "" {
+		return [32]byte{}
 	}
 	c, err := pio.GetConfigPath()
-	if err != nil {
-		log.Fatalf("Could not get config file: %s", err.Error())
-	}
+	pio.LogF(err, "Could not get config file")
 
 	var configFile pio.ConfigFile
 	configFileBytes, err := ioutil.ReadFile(c)
-	if err != nil {
-		log.Fatalf("Could not read config file: %s", err.Error())
-	}
+	pio.LogF(err, "Could not read config file")
+
 	err = json.Unmarshal(configFileBytes, &configFile)
-	if err != nil {
-		log.Fatalf("Could not read unmarshal config file: %s", err.Error())
-	}
+	pio.LogF(err, "Could not read unmarshal config file")
+
 	masterKey, err := Scrypt([]byte(pass), configFile.MasterPassKeySalt[:])
-	if err != nil {
-		log.Fatalf("Could not create master key: %s", err.Error())
-	}
+	pio.LogF(err, "Could not create master key")
 
 	masterPrivKeySlice, err := Open(&masterKey, configFile.MasterKeyPrivSealed)
-
 	copy(masterPrivKey[:], masterPrivKeySlice)
-	if err != nil {
-		log.Fatalf("Could not decrypt private key: %s", err.Error())
-	}
+	pio.LogF(err, "Could not decrypt private key")
+
 	return
 }
 
