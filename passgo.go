@@ -120,7 +120,7 @@ func main() {
 	switch flag.Args()[0] {
 	case "edit":
 		path := getSubArguments(subArgs, ALLARGS)
-		edit.Edit(path)
+		edit.Edit(path, multiline)
 	case "ls", "find":
 		path := getSubArguments(subArgs, ALLARGS)
 		show.Find(path)

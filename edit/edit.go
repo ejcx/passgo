@@ -67,10 +67,15 @@ func RemoveFile(path string) {
 }
 
 // Edit is used to change the password of a site. New keys MUST be generated.
-func Edit(path string) {
+// A multiline edit allows the user to edit existing notes and add existing notes.  Otherwise, keeping notes is assumed to be true.
+func Edit(path string, multiline bool) {
 	vault := pio.GetVault()
 	for jj, siteInfo := range vault {
 		if siteInfo.Name == path {
+			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
+			if err != nil {
+				log.Fatalf("Could not get new password for %s: %s", path, err)
+			}
 			var notes [][]byte
 			if siteInfo.NotesSealed != nil {
 				masterPrivKey := pc.GetMasterKey()
@@ -79,21 +84,21 @@ func Edit(path string) {
 					if err != nil {
 						log.Fatalf("Could not decrypt site note.")
 					} else {
-						s, err := pio.Prompt(fmt.Sprintf("Keep the following note '%s' (Y/n)? ", note))
-						if err != nil {
-							log.Fatalf("Could not get user response: %s", err)
-						}
-						if s == "" || s == "y" || s == "Y" {
+						if !multiline {
 							notes = append(notes, note)
+						} else {
+							s, err := pio.Prompt(fmt.Sprintf("Keep the following note '%s' (Y/n)? ", note))
+							if err != nil {
+								log.Fatalf("Could not get user response: %s", err)
+							}
+							if s == "" || s == "y" || s == "Y" {
+								notes = append(notes, note)
+							}
 						}
 					}
 				}
 			}
-			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
-			if err != nil {
-				log.Fatalf("Could not get new password for %s: %s", path, err)
-			}
-			newSiteInfo := reencrypt(siteInfo, newPass, notes)
+			newSiteInfo := reencrypt(siteInfo, newPass, notes, multiline)
 			vault[jj] = newSiteInfo
 			err = pio.UpdateVault(vault)
 			if err != nil {
@@ -129,7 +134,7 @@ func Rename(path string) {
 }
 
 // reencrypt takes in a SiteInfo and will return a new SiteInfo that has been safely reencrypted
-func reencrypt(s pio.SiteInfo, newPass string, notes [][]byte) pio.SiteInfo {
+func reencrypt(s pio.SiteInfo, newPass string, notes [][]byte, multiline bool) pio.SiteInfo {
 	var c pio.ConfigFile
 	pub, priv, err := box.GenerateKey(rand.Reader)
 	if err != nil {
@@ -164,6 +169,13 @@ func reencrypt(s pio.SiteInfo, newPass string, notes [][]byte) pio.SiteInfo {
 			}
 			notesSealed = append(notesSealed, noteSealed)
 		}
+	}
+	var newNotes [][]byte
+	if multiline {
+		newNotes = pc.GetMultiline(masterPub, priv)
+	}
+	for _, note := range newNotes {
+		notesSealed = append(notesSealed, note)
 	}
 
 	return pio.SiteInfo{
