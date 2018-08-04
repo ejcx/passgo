@@ -21,7 +21,7 @@ const (
 )
 
 // Password is used to add a new password entry to the vault.
-func Password(name string) {
+func Password(name string, multiline bool) {
 	var c pio.ConfigFile
 	pub, priv, err := box.GenerateKey(rand.Reader)
 	if err != nil {
@@ -50,13 +50,17 @@ func Password(name string) {
 	if err != nil {
 		log.Fatalf("Could not get password for site: %s", err.Error())
 	}
-
 	passSealed, err := pc.SealAsym([]byte(sitePass), &masterPub, priv)
 
+	var notesSealed [][]byte
+	if multiline {
+		notesSealed = pc.GetMultiline(masterPub, priv)
+	}
 	si := pio.SiteInfo{
-		PubKey:     *pub,
-		Name:       name,
-		PassSealed: passSealed,
+		PubKey:      *pub,
+		Name:        name,
+		PassSealed:  passSealed,
+		NotesSealed: notesSealed,
 	}
 
 	err = si.AddSite()

@@ -63,6 +63,25 @@ type PasswordSpecs struct {
 	NeedsDigit  bool
 }
 
+func GetMultiline(masterPub [32]byte, priv *[32]byte) (notesSealed [][]byte) {
+	notesSealed = make([][]byte, 0)
+	for {
+		note, err := pio.Prompt("Enter note: ")
+		if err != nil {
+			log.Fatalf("Could not get note: %s", err.Error())
+		}
+		if note == "" {
+			break
+		}
+		noteSealed, err := SealAsym([]byte(note), &masterPub, priv)
+		if err != nil {
+			log.Fatalf("Could not get note: %s", err.Error())
+		}
+		notesSealed = append(notesSealed, noteSealed)
+	}
+	return notesSealed
+}
+
 // Seal wraps that AEAD interface secretbox Seal and safely
 // generates a random nonce for developers. This change to
 // seal eliminates the risk of programmers reusing nonces.

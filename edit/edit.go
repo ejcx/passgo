@@ -71,11 +71,29 @@ func Edit(path string) {
 	vault := pio.GetVault()
 	for jj, siteInfo := range vault {
 		if siteInfo.Name == path {
+			var notes [][]byte
+			if siteInfo.NotesSealed != nil {
+				masterPrivKey := pc.GetMasterKey()
+				for jj := 0; jj < len(siteInfo.NotesSealed); jj++ {
+					note, err := pc.OpenAsym(siteInfo.NotesSealed[jj], &siteInfo.PubKey, &masterPrivKey)
+					if err != nil {
+						log.Fatalf("Could not decrypt site note.")
+					} else {
+						s, err := pio.Prompt(fmt.Sprintf("Keep the following note '%s' (Y/n)? ", note))
+						if err != nil {
+							log.Fatalf("Could not get user response: %s", err)
+						}
+						if s == "" || s == "y" || s == "Y" {
+							notes = append(notes, note)
+						}
+					}
+				}
+			}
 			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
 			if err != nil {
 				log.Fatalf("Could not get new password for %s: %s", path, err)
 			}
-			newSiteInfo := reencrypt(siteInfo, newPass)
+			newSiteInfo := reencrypt(siteInfo, newPass, notes)
 			vault[jj] = newSiteInfo
 			err = pio.UpdateVault(vault)
 			if err != nil {
@@ -110,7 +128,7 @@ func Rename(path string) {
 }
 
 // reencrypt takes in a SiteInfo and will return a new SiteInfo that has been safely reencrypted
-func reencrypt(s pio.SiteInfo, newPass string) pio.SiteInfo {
+func reencrypt(s pio.SiteInfo, newPass string, notes [][]byte) pio.SiteInfo {
 	var c pio.ConfigFile
 	pub, priv, err := box.GenerateKey(rand.Reader)
 	if err != nil {
@@ -134,9 +152,23 @@ func reencrypt(s pio.SiteInfo, newPass string) pio.SiteInfo {
 	if err != nil {
 		log.Fatalf("Could not seal new site password: %s", err.Error())
 	}
+
+	var notesSealed [][]byte
+	if len(notes) > 0 {
+		notesSealed = make([][]byte, 0)
+		for _, note := range notes {
+			noteSealed, err := pc.SealAsym([]byte(note), &masterPub, priv)
+			if err != nil {
+				log.Fatalf("Could not get note: %s", err.Error())
+			}
+			notesSealed = append(notesSealed, noteSealed)
+		}
+	}
+
 	return pio.SiteInfo{
-		PubKey:     *pub,
-		Name:       s.Name,
-		PassSealed: passSealed,
+		PubKey:      *pub,
+		Name:        s.Name,
+		PassSealed:  passSealed,
+		NotesSealed: notesSealed,
 	}
 }

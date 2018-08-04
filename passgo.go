@@ -91,6 +91,18 @@ var (
 `
 )
 
+func SubArgs(args []string) (subArgs []string, multiline bool) {
+	subArgs = args[1:]
+	for jj, arg := range subArgs {
+		if arg == "-m" || arg == "--multi" {
+			multiline = true
+			subArgs = append(subArgs[:jj], subArgs[jj+1:]...)
+			jj--
+		}
+	}
+	return subArgs, multiline
+}
+
 func main() {
 	// Check to see if this user is under attack.
 	pio.CheckAttackFile()
@@ -104,7 +116,7 @@ func main() {
 	}
 
 	// subArgs is used by subcommands to retreive only their args.
-	subArgs := flag.Args()[1:]
+	subArgs, multiline := SubArgs(flag.Args())
 	switch flag.Args()[0] {
 	case "edit":
 		path := getSubArguments(subArgs, ALLARGS)
@@ -124,7 +136,7 @@ func main() {
 		initialize.Init()
 	case "insert":
 		pathName := getSubArguments(subArgs, ALLARGS)
-		insert.Password(pathName)
+		insert.Password(pathName, multiline)
 	case "integrity":
 		pc.GetSitesIntegrity()
 		sync.Commit(sync.IntegrityCommit)

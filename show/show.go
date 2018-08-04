@@ -85,6 +85,7 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, co
 	for _, siteList := range allSites {
 		for _, site := range siteList {
 			var unsealed []byte
+			var notes [][]byte
 			var err error
 			if site.IsFile {
 				fileDir, err := pio.GetEncryptedFilesDir()
@@ -113,11 +114,27 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, co
 					log.Println("Could not decrypt site password.")
 					continue
 				}
+				if site.NotesSealed != nil {
+					for jj := 0; jj < len(site.NotesSealed); jj++ {
+						note, err := pc.OpenAsym(site.NotesSealed[jj], &site.PubKey, &masterPrivKey)
+						if err != nil {
+							log.Println("Could not decrypt site note.")
+						} else {
+							notes = append(notes, note)
+						}
+					}
+				}
 			}
 			if copyPassword {
 				pio.ToClipboard(string(unsealed))
 			} else {
 				fmt.Println(string(unsealed))
+				for jj := 0; jj < len(notes); jj++ {
+					if jj == 0 {
+						fmt.Println("-- Notes --")
+					}
+					fmt.Println(string(notes[jj]))
+				}
 			}
 		}
 	}
@@ -191,15 +208,17 @@ func SearchAll(st searchType, searchFor string) (allSites map[string][]pio.SiteI
 		}
 		name := s.Name[slashIndex+1:]
 		pass := s.PassSealed
+		notes := s.NotesSealed
 		pubKey := s.PubKey
 		isFile := s.IsFile
 		filename := s.FileName
 		si := pio.SiteInfo{
-			Name:       name,
-			PassSealed: pass,
-			PubKey:     pubKey,
-			IsFile:     isFile,
-			FileName:   filename,
+			Name:        name,
+			PassSealed:  pass,
+			NotesSealed: notes,
+			PubKey:      pubKey,
+			IsFile:      isFile,
+			FileName:    filename,
 		}
 		if st == One {
 			if name == searchFor || fmt.Sprintf("%s/%s", group, name) == searchFor {

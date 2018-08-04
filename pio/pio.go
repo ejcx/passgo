@@ -51,11 +51,12 @@ type ConfigFile struct {
 
 // SiteInfo represents a single saved password entry.
 type SiteInfo struct {
-	PubKey     [32]byte
-	PassSealed []byte
-	Name       string
-	FileName   string
-	IsFile     bool
+	PubKey      [32]byte
+	PassSealed  []byte
+	NotesSealed [][]byte
+	Name        string
+	FileName    string
+	IsFile      bool
 }
 
 // SiteFile represents the entire passgo password store.
