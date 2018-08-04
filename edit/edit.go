@@ -89,7 +89,7 @@ func Edit(path string, multiline bool) {
 						} else {
 							s, err := pio.Prompt(fmt.Sprintf("Keep the following note '%s' (Y/n)? ", note))
 							if err != nil {
-								log.Fatalf("Could not get user response: %s", err)
+								log.Fatalf("Could not get user response: %s", err.Error())
 							}
 							if s == "" || s == "y" || s == "Y" {
 								notes = append(notes, note)
@@ -102,7 +102,7 @@ func Edit(path string, multiline bool) {
 			vault[jj] = newSiteInfo
 			err = pio.UpdateVault(vault)
 			if err != nil {
-				log.Fatalf("Could not edit %s: %s", path, err)
+				log.Fatalf("Could not edit %s: %s", path, err.Error())
 			}
 			sync.RegenerateCommit(path)
 		}
