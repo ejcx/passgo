@@ -105,5 +105,5 @@ func ImportMultiEntry(colNames []string, record []string, passAt, hostAt, nameAt
 			return
 		}
 	}
-	sync.InsertCommit(record[hostAt])
+	sync.InsertCommit(si.Name)
 }
