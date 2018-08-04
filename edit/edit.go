@@ -114,9 +114,10 @@ func Rename(path string) {
 				log.Fatalf("Could not get new site name from user: %s", err.Error())
 			}
 			vault[jj] = pio.SiteInfo{
-				PubKey:     siteInfo.PubKey,
-				PassSealed: siteInfo.PassSealed,
-				Name:       newName,
+				PubKey:      siteInfo.PubKey,
+				PassSealed:  siteInfo.PassSealed,
+				NotesSealed: siteInfo.NotesSealed,
+				Name:        newName,
 			}
 			err = pio.UpdateVault(vault)
 			if err != nil {
