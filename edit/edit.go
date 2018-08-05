@@ -69,12 +69,25 @@ func RemoveFile(path string) {
 // Edit is used to change the password of a site. New keys MUST be generated.
 // A multiline edit allows the user to edit existing notes and add existing notes.  Otherwise, keeping notes is assumed to be true.
 func Edit(path string, multiline bool) {
+	var err error
+	newPass := ""
 	vault := pio.GetVault()
 	for jj, siteInfo := range vault {
 		if siteInfo.Name == path {
 			var notes [][]byte
-			if siteInfo.NotesSealed != nil {
+			if siteInfo.NotesSealed == nil {
+				newPass, err = pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
+				if err != nil {
+					log.Fatalf("Could not get new password for %s: %s", path, err)
+				}
+			} else {
+				// existing notes must be decrypted
 				masterPrivKey := pc.GetMasterKey()
+
+				newPass, err = pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
+				if err != nil {
+					log.Fatalf("Could not get new password for %s: %s", path, err)
+				}
 				for jj := 0; jj < len(siteInfo.NotesSealed); jj++ {
 					note, err := pc.OpenAsym(siteInfo.NotesSealed[jj], &siteInfo.PubKey, &masterPrivKey)
 					if err != nil {
@@ -94,9 +107,8 @@ func Edit(path string, multiline bool) {
 					}
 				}
 			}
-			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
-			if err != nil {
-				log.Fatalf("Could not get new password for %s: %s", path, err)
+			if newPass == "" {
+				log.Fatal("Empty passwords are not permitted.  Aborting.")
 			}
 			newSiteInfo := reencrypt(siteInfo, newPass, notes, multiline)
 			vault[jj] = newSiteInfo
