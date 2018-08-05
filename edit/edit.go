@@ -72,10 +72,6 @@ func Edit(path string, multiline bool) {
 	vault := pio.GetVault()
 	for jj, siteInfo := range vault {
 		if siteInfo.Name == path {
-			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
-			if err != nil {
-				log.Fatalf("Could not get new password for %s: %s", path, err)
-			}
 			var notes [][]byte
 			if siteInfo.NotesSealed != nil {
 				masterPrivKey := pc.GetMasterKey()
@@ -97,6 +93,10 @@ func Edit(path string, multiline bool) {
 						}
 					}
 				}
+			}
+			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
+			if err != nil {
+				log.Fatalf("Could not get new password for %s: %s", path, err)
 			}
 			newSiteInfo := reencrypt(siteInfo, newPass, notes, multiline)
 			vault[jj] = newSiteInfo
