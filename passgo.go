@@ -40,6 +40,9 @@ var (
 		Print the contents of the vault.
 	passgo show site-path
 		Print the password of a passgo entry.
+	passgo shows site-path-substring
+		Short for "show substringed (site)".
+		Print the password of the first passgo entry to contain the given substring.
 	passgo init
 		Initialize the .passgo directory, and generate your secret keys.
 	passgo insert site-path
@@ -163,6 +166,9 @@ func main() {
 	case "show":
 		path := getSubArguments(flag.Args(), 1)
 		show.Site(path, *copyPass)
+	case "shows":
+		path := getSubArguments(flag.Args(), 1)
+		show.SubMatch(path, *copyPass)
 	case "insertfile":
 		allArgs := getSubArguments(subArgs, ALLARGS)
 		argList := strings.Split(allArgs, " ")
