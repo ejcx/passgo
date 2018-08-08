@@ -33,7 +33,7 @@ const (
 	// match that contain the searchFor string
 	Search
 	// Return the first matching site with a given prefixed value
-	PrefixMatch
+	ShowMatch
 )
 
 func init() {
@@ -78,7 +78,7 @@ func Site(path string, copyPassword bool) {
 
 // SubMatch will print out the password of the site that contains the path
 func SubMatch(path string, copyPassword bool) {
-	allSites, allErrors := SearchAll(PrefixMatch, path)
+	allSites, allErrors := SearchAll(ShowMatch, path)
 	if len(allSites) == 0 {
 		fmt.Printf("Site with path %s not found", path)
 		return
@@ -242,7 +242,7 @@ func SearchAll(st searchType, searchFor string) (allSites map[string][]pio.SiteI
 					},
 				}, allErrors
 			}
-		} else if st == PrefixMatch {
+		} else if st == ShowMatch {
 			if strings.Contains(name, searchFor) {
 				return map[string][]pio.SiteInfo{
 					group: []pio.SiteInfo{
