@@ -13,6 +13,7 @@ import (
 	"github.com/ejcx/passgo/initialize"
 	"github.com/ejcx/passgo/insert"
 	"github.com/ejcx/passgo/pc"
+	"github.com/ejcx/passgo/pcsv"
 	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/show"
 	"github.com/ejcx/passgo/sync"
@@ -42,6 +43,9 @@ var (
 		Print the password of a passgo entry.
 	passgo init
 		Initialize the .passgo directory, and generate your secret keys.
+	passgo import csv-file
+		Import a csv file.  The first line must be a comma separated list where
+		the columns labeled 'Password' and 'Hostname' (or 'Name') exist.
 	passgo insert site-path
 		Add a site to your password store. This site can optionally be a part
 		of a group by prepending a group name and slash to the site name.
@@ -118,6 +122,9 @@ func main() {
 	// subArgs is used by subcommands to retreive only their args.
 	subArgs, multiline := SubArgs(flag.Args())
 	switch flag.Args()[0] {
+	case "import":
+		path := getSubArguments(subArgs, ALLARGS)
+		pcsv.Import(path)
 	case "edit":
 		path := getSubArguments(subArgs, ALLARGS)
 		edit.Edit(path, multiline)
