@@ -32,6 +32,8 @@ const (
 	// Search indicates that SearchSites should return all sites found that
 	// match that contain the searchFor string
 	Search
+	// Return the first matching site with a given prefixed value
+	ShowMatch
 )
 
 func init() {
@@ -65,6 +67,18 @@ func Find(frag string) {
 // Site will print out the password of the site that matches path
 func Site(path string, copyPassword bool) {
 	allSites, allErrors := SearchAll(One, path)
+	if len(allSites) == 0 {
+		fmt.Printf("Site with path %s not found", path)
+		return
+	}
+	masterPrivKey := pc.GetMasterKey()
+	showPassword(allSites, masterPrivKey, copyPassword)
+	handleErrors(allErrors)
+}
+
+// SubMatch will print out the password of the site that contains the path
+func SubMatch(path string, copyPassword bool) {
+	allSites, allErrors := SearchAll(ShowMatch, path)
 	if len(allSites) == 0 {
 		fmt.Printf("Site with path %s not found", path)
 		return
@@ -222,6 +236,14 @@ func SearchAll(st searchType, searchFor string) (allSites map[string][]pio.SiteI
 		}
 		if st == One {
 			if name == searchFor || fmt.Sprintf("%s/%s", group, name) == searchFor {
+				return map[string][]pio.SiteInfo{
+					group: []pio.SiteInfo{
+						si,
+					},
+				}, allErrors
+			}
+		} else if st == ShowMatch {
+			if strings.Contains(name, searchFor) {
 				return map[string][]pio.SiteInfo{
 					group: []pio.SiteInfo{
 						si,
