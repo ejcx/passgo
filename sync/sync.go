@@ -163,12 +163,16 @@ func verifyIntegrity() {
 	}
 }
 
+// Commit message
 func Commit(msg string) {
-	d, err := pio.GetPassDir()
-	pio.LogF(err, "Could not get pass dir")
-	err = os.Chdir(d)
-	pio.LogF(err, "Could not change to pass directory")
-	_, err = exec.Command("git", "add", "-u").Output()
-	pio.LogF(err, "Could not add files for commit")
-	exec.Command("git", "commit", "-m", msg).Output()
+	// bypass sync
+	/*
+		d, err := pio.GetPassDir()
+		pio.LogF(err, "Could not get pass dir")
+		err = os.Chdir(d)
+		pio.LogF(err, "Could not change to pass directory")
+		_, err = exec.Command("git", "add", "-u").Output()
+		pio.LogF(err, "Could not add files for commit")
+		exec.Command("git", "commit", "-m", msg).Output()
+	*/
 }
