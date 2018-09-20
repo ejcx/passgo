@@ -90,7 +90,7 @@ func Push() {
 		log.Fatalf("Could not save config file with hmac: %s", err)
 	}
 	Commit("Update integrity hash")
-	_, err = exec.Command("git", "push", "-u", "pass-origin", "master").Output()
+	_, err = exec.Command("git", "push", "-A", "pass-origin", "master").Output()
 	if err != nil {
 		log.Fatalf("Could not push changes: %s", err.Error())
 	}
