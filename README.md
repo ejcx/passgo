@@ -16,4 +16,4 @@
 NOTE: the `JSON` vault for this fork is **not compatible**   
 with any that do not abide its new user/pass schema.
 
-See `notes.md` for more detail.
+[See `notes.md`](notes.md) for more detail.

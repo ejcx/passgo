@@ -15,13 +15,13 @@ any others that do not abide the user/pass schema.
 
 ### Tested Sucessfully  
 - @ Linux (CentOS 7), local/remote; remote clipboard requires X11 (`ssh -X ...`).  
-- @ Windows, `cmd` and `PowerShell` ("terminal" pkg fails on `mintty`; MINGW64/Cygwin).   
+- @ Windows, `cmd`, `PowerShell`, `mintty` (requires `winpty`).   
 
 ### ~~ToDo~~ DONE:
 - Add a loop-mode to `show.Site`, in the absence of a site/file argument, where the master  
   password is required only once, allowing more site/file requests thereafter.
 
-### Dev. notes per branch 
+### changelog 
 - `userpass1`
   * Add usernames handling to `insert.go` and `show.go`
 - `userpass2`  
@@ -35,10 +35,12 @@ which returns `pio.Creds`, a `struct` used at `edit.Edit` and `insert.Insert`.
 - `userpass4`  
   * Shorten user/pass code at `edit.reencrypt` function.
 - `userpass5`
-   * Add loop mode @ `show.Site`
+  * Add loop mode @ `show.Site`
   * Add `pio.LogF` to replace 3-line pattern where apropos.
   * Mod `pc.GetMasterKey`; return quickly if no password entered.
   * Mod `passgo.usage` info.
+- `synch` 
+   * Remove `synch` functionality; bypass `Commit`
 
 
 

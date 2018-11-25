@@ -18,13 +18,6 @@ import (
 
 type searchType int
 
-var (
-	lastPrefix      = "└──" // [U+2514 U+2500...] "BOX DRAWINGS LIGHT UP AND RIGHT", "...LIGHT HORIZONTAL", ...
-	regPrefix       = "├──" // [U+251C U+2500...] "BOX DRAWINGS LIGHT VERTICAL AND RIGHT", ...
-	innerPrefix     = "│  " // [U+2502 U+0020...] "BOX DRAWINGS LIGHT VERTICAL", ...
-	innerLastPrefix = "   "
-)
-
 const (
 	// All indicates SearchSites should return all sites from the vault.
 	All searchType = iota
@@ -36,12 +29,25 @@ const (
 	Search
 )
 
+var (
+	lastPrefix      = "└──" // [U+2514 U+2500...] "BOX DRAWINGS LIGHT UP AND RIGHT", "...LIGHT HORIZONTAL", ...
+	regPrefix       = "├──" // [U+251C U+2500...] "BOX DRAWINGS LIGHT VERTICAL AND RIGHT", ...
+	innerPrefix     = "│  " // [U+2502 U+0020...] "BOX DRAWINGS LIGHT VERTICAL", ...
+	innerLastPrefix = "   "
+)
+
 func init() {
-	/* Windows doesn't work with ambiguous width characters */
-	if runtime.GOOS == "windows" {
+	switch runtime.GOOS {
+	case "windows":
 		lastPrefix = "+--"
 		regPrefix = "+--"
-		innerPrefix = "|  " // [U+007C U+0020...] "VERTICAL LINE", ...
+		innerPrefix = "|  "
+	}
+	switch runtime.GOARCH {
+	case "arm", "arm64":
+		lastPrefix = "+--"
+		regPrefix = "+--"
+		innerPrefix = "|  "
 	}
 }
 

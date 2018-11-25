@@ -5,3 +5,8 @@ go:
  - tip
 env:
  - GO15VENDOREXPERIMENT=1
+
+# safelist
+branches:
+  only:
+  - userpass 
