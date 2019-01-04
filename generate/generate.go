@@ -14,14 +14,11 @@ var (
 // A default password length of 24 will be used if
 //     1. No pwlen is supplied
 //     2. pwlen is less than 1
-//     3. pwlen is greater than 2^17(131,072)
-// NOTE: passwords are only guaranteed to be *at least* pwlen in length
-//       they may in fact be longer
+//     3. pwlen is greater than MaxPwLength
 func Generate(pwlen int) string {
-	if pwlen < 1 || pwlen > 1<<17 {
+	if pwlen < 1 || pwlen > pc.MaxPwLength {
 		pwlen = defaultPwLen
 	}
-
 	// By default, we should generate a strong password that needs everything
 	specs := &pc.PasswordSpecs{
 		NeedsUpper:  true,

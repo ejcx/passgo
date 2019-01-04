@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	maxPwLength = 65535
+	MaxPwLength = 65535
 )
 
 var (
@@ -217,28 +217,39 @@ func GeneratePassword(specs *PasswordSpecs, passlen int) (pass string, err error
 		err = errors.New("Invalid password specs and length passed in to generate password. Try generating a longer password")
 		return
 	}
-	if passlen > maxPwLength {
-		err = fmt.Errorf("Max password length is %d. Generate a shorter password", maxPwLength)
+	if passlen > MaxPwLength {
+		err = fmt.Errorf("Max password length is %d. Generate a shorter password", MaxPwLength)
 		return
 	}
 	for {
 		pass = ""
-		_, err = rand.Read(letters[:])
-		if err != nil {
-			return
-		}
-		for _, letter := range letters {
-			// Check to make sure that the letter is inside
-			// the range of printable characters
-			if letter > 32 && letter < 127 {
-				pass += string(letter)
+		for {
+			_, err = rand.Read(letters[:])
+			if err != nil {
+				return
+			}
+
+			for _, letter := range letters {
+				// Check to make sure that the letter is inside
+				// the range of printable characters
+				if letter > 32 && letter < 127 {
+					pass += string(letter)
+				}
+				// If it doesn't meet the specs, but we verified earlier that it is
+				// possible to meet the pw expectations, just try again.
+				if passlen == len(pass) {
+					if specs.MeetsSpecs(pass) {
+						return
+					} else {
+						fmt.Println("This password didn't meet specs: %s", pass)
+					}
+					continue
+				}
 			}
 			// If it doesn't meet the specs, but we verified earlier that it is
 			// possible to meet the pw expectations, just try again.
-			if passlen == len(pass) {
-				if specs.MeetsSpecs(pass) {
-					return
-				}
+			if passlen != len(pass) {
+				continue
 			}
 		}
 	}
@@ -261,10 +272,14 @@ func (specs *PasswordSpecs) MeetsSpecs(pass string) bool {
 		} else if isASCIISymbol(pass[i]) {
 			needsSymbol = false
 		}
+		// Optimization. Once we find out that we have everything
+		// that we need, return.
+		if !needsUpper && !needsLower && !needsSymbol && !needsDigit {
+			return !needsUpper && !needsLower && !needsSymbol && !needsDigit
+		}
 	}
-	// Return true if it doesn't need any uppers, it doesn't need any lowers
-	// it doesn't need any symbols, and it doesn't need any digits.
-	return !needsUpper && !needsLower && !needsSymbol && !needsDigit
+	// The answer is false if the optmiziation didn't return true.
+	return false
 }
 
 // GetSitesIntegrity is used to update the sites vault integrity file.
