@@ -13,8 +13,8 @@ var generateTests = []struct {
 	{-1, 24},
 	{5, 5},
 	{10, 10},
-	{1 << 18, 24},
-	{1<<32 - 1, 24},
+	{1 << 6, 24},
+	{1 << 11, 24},
 }
 
 func TestGenerate(t *testing.T) {

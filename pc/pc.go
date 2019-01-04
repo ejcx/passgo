@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -17,6 +18,10 @@ import (
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/crypto/nacl/secretbox"
 	"golang.org/x/crypto/scrypt"
+)
+
+const (
+	MaxPwLength = 2048
 )
 
 var (
@@ -151,11 +156,6 @@ func GetMasterKey() (masterPrivKey [32]byte) {
 	return
 }
 
-// Satisfied will determine if a PasswordSpecs type indicates it no longer
-// needs any more specs.
-func (s *PasswordSpecs) Satisfied() bool {
-	return !s.NeedsDigit && !s.NeedsUpper && !s.NeedsLower && !s.NeedsSymbol
-}
 func checkBound(letter byte, lowerBound, upperBound int) bool {
 	if int(letter) >= lowerBound && int(letter) <= upperBound {
 		return true
@@ -178,16 +178,25 @@ func isASCIISymbol(letter byte) bool {
 	grp4 := checkBound(letter, SymbolGrp4LowerBound, SymbolGrp4UpperBound)
 	return grp1 || grp2 || grp3 || grp4
 }
-func updateSpec(specs *PasswordSpecs, letter byte) {
-	if isASCIIDigit(letter) {
-		specs.NeedsDigit = false
-	} else if isASCIIUpper(letter) {
-		specs.NeedsUpper = false
-	} else if isASCIILower(letter) {
-		specs.NeedsLower = false
-	} else if isASCIISymbol(letter) {
-		specs.NeedsSymbol = false
+
+func passwordExpectationsPossible(specs *PasswordSpecs, passlen int) bool {
+	minLength := 0
+	if specs.NeedsUpper {
+		minLength++
 	}
+	if specs.NeedsLower {
+		minLength++
+	}
+	if specs.NeedsSymbol {
+		minLength++
+	}
+	if specs.NeedsDigit {
+		minLength++
+	}
+	if passlen < minLength {
+		return false
+	}
+	return true
 }
 
 // GeneratePassword is used to generate a password like string securely.
@@ -201,31 +210,67 @@ func updateSpec(specs *PasswordSpecs, letter byte) {
 // to  read chunks of randomness until it has found a password that
 // meets the specifications of the PasswordSpec passed in to the func.
 func GeneratePassword(specs *PasswordSpecs, passlen int) (pass string, err error) {
-	var letters [2048]byte
+	var (
+		letters [65535]byte
+	)
+	if !passwordExpectationsPossible(specs, passlen) {
+		err = errors.New("Invalid password specs and length passed in to generate password. Try generating a longer password")
+		return
+	}
+	if passlen > MaxPwLength {
+		err = fmt.Errorf("Max password length is %d. Generate a shorter password", MaxPwLength)
+		return
+	}
 	for {
-		if passlen <= len(pass) {
-			if specs.Satisfied() {
-				return pass, nil
-			}
-		}
+		pass = ""
 		_, err = rand.Read(letters[:])
 		if err != nil {
 			return
 		}
+
 		for _, letter := range letters {
-			if passlen <= len(pass) {
-				if specs.Satisfied() {
-					return pass, nil
-				}
-			}
 			// Check to make sure that the letter is inside
 			// the range of printable characters
 			if letter > 32 && letter < 127 {
 				pass += string(letter)
 			}
-			updateSpec(specs, letter)
+			// If it doesn't meet the specs, but we verified earlier that it is
+			// possible to meet the pw expectations, just try again.
+			if passlen == len(pass) {
+				if specs.MeetsSpecs(pass) {
+					return
+				}
+				continue
+			}
 		}
 	}
+}
+
+func (specs *PasswordSpecs) MeetsSpecs(pass string) bool {
+	var (
+		needsUpper  = specs.NeedsUpper
+		needsLower  = specs.NeedsLower
+		needsSymbol = specs.NeedsSymbol
+		needsDigit  = specs.NeedsDigit
+	)
+	for i := 0; i < len(pass); i++ {
+		if isASCIIDigit(pass[i]) {
+			needsDigit = false
+		} else if isASCIIUpper(pass[i]) {
+			needsUpper = false
+		} else if isASCIILower(pass[i]) {
+			needsLower = false
+		} else if isASCIISymbol(pass[i]) {
+			needsSymbol = false
+		}
+		// Optimization. Once we find out that we have everything
+		// that we need, return.
+		if !needsUpper && !needsLower && !needsSymbol && !needsDigit {
+			return !needsUpper && !needsLower && !needsSymbol && !needsDigit
+		}
+	}
+	// The answer is false if the optmiziation didn't return true.
+	return false
 }
 
 // GetSitesIntegrity is used to update the sites vault integrity file.
