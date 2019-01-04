@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	MaxPwLength = 65535
+	MaxPwLength = 2048
 )
 
 var (
@@ -223,32 +223,23 @@ func GeneratePassword(specs *PasswordSpecs, passlen int) (pass string, err error
 	}
 	for {
 		pass = ""
-		for {
-			_, err = rand.Read(letters[:])
-			if err != nil {
-				return
-			}
+		_, err = rand.Read(letters[:])
+		if err != nil {
+			return
+		}
 
-			for _, letter := range letters {
-				// Check to make sure that the letter is inside
-				// the range of printable characters
-				if letter > 32 && letter < 127 {
-					pass += string(letter)
-				}
-				// If it doesn't meet the specs, but we verified earlier that it is
-				// possible to meet the pw expectations, just try again.
-				if passlen == len(pass) {
-					if specs.MeetsSpecs(pass) {
-						return
-					} else {
-						fmt.Println("This password didn't meet specs: %s", pass)
-					}
-					continue
-				}
+		for _, letter := range letters {
+			// Check to make sure that the letter is inside
+			// the range of printable characters
+			if letter > 32 && letter < 127 {
+				pass += string(letter)
 			}
 			// If it doesn't meet the specs, but we verified earlier that it is
 			// possible to meet the pw expectations, just try again.
-			if passlen != len(pass) {
+			if passlen == len(pass) {
+				if specs.MeetsSpecs(pass) {
+					return
+				}
 				continue
 			}
 		}

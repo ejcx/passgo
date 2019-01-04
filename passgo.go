@@ -53,7 +53,7 @@ var (
 		Change the password of a site in the vault.
 	passgo generate length=24
 		Prints a randomly generated password. The length of this password defaults
-		to 24. If a password length is specified as greater than 65535 then generate
+		to 24. If a password length is specified as greater than 2048 then generate
     will fail.
 	passgo find site-path
 		Prints all sites that contain the site-path. Used to print just one group
