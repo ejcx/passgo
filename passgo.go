@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 
@@ -16,25 +15,32 @@ import (
 	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/show"
 	"github.com/ejcx/passgo/sync"
+	"github.com/spf13/cobra"
 )
 
 const (
 	ALLARGS = -1
+	version = `v2.0`
 )
 
 var (
+	RootCmd = &cobra.Command{
+		Use:   "passgo",
+		Short: "Print the contents of the vault.",
+		Run: func(cmd *cobra.Command, args []string) {
+			show.ListAll()
+		},
+	}
+	versionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "Print the version of your passgo binary.",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println(version)
+		},
+	}
 	// copyPass indicates that the shown password should be copied to the clipboard.
 	copyPass = flag.Bool("copy", false, "If true, copy password to clipboard instead of displaying it")
 
-	version = `======================================
-= passgo: v1.0                       =
-= The simple golang password and     =
-= file manager                       =
-=                                    =
-= Twiinsen Security                  =
-= evan@twiinsen.com                  =
-= https://twiinsen.com/passgo        =
-======================================`
 	usage = `Usage:
 	passgo
 		Print the contents of the vault.
@@ -71,26 +77,22 @@ var (
 	passgo pull
 		Pull will perform a git pull and sync the changes in the remote git
 		repository with your local repo.
-	passgo push
-		Push will perform a git push to sync your changes with your remote
-		git repository.
-	passgo remote remote-url
-		Remote is used to set the remote repository url. This is the repository
-		that your sites will be pushed to and pulled from.
-	passgo clone remote-url
-		Clone will copy the remote url in to the .passgo directory in your
-		home directory. It will fail if the directory already exists.
 	passgo integrity
 		Update the integrity hash of your password store if you are planning
 		to manually push to the server.
 	passgo usage
 		Print this message!
-	passgo version
-		Print version information
 `
 )
 
+func init() {
+	RootCmd.AddCommand(versionCmd)
+}
 func main() {
+	RootCmd.Execute()
+}
+
+func run() {
 	// Check to see if this user is under attack.
 	pio.CheckAttackFile()
 
@@ -133,10 +135,6 @@ func main() {
 	case "rename":
 		path := getSubArguments(subArgs, ALLARGS)
 		edit.Rename(path)
-	case "help", "usage":
-		printUsage()
-	case "version":
-		printVersion()
 	case "pull":
 		sync.Pull()
 	case "push":
@@ -154,7 +152,6 @@ func main() {
 		allArgs := getSubArguments(subArgs, ALLARGS)
 		argList := strings.Split(allArgs, " ")
 		if len(argList) != 2 {
-			printUsage()
 			log.Fatalln("Incorrect args.")
 		}
 		path := argList[0]
@@ -163,16 +160,7 @@ func main() {
 	case "rmfile", "removefile":
 		path := getSubArguments(subArgs, ALLARGS)
 		edit.RemoveFile(path)
-	default:
-		log.Fatalf("%s\nInvalid Command %s", usage, os.Args[1])
 	}
-}
-
-func printUsage() {
-	fmt.Println(usage)
-}
-func printVersion() {
-	fmt.Println(version)
 }
 
 // getSubArguments requires the list of subarguments and the
