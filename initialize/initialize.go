@@ -49,6 +49,15 @@ func Init() {
 		log.Fatalf("Could not get pass config: %s", err.Error())
 	}
 
+	// Prompt for the password immediately. The reason for doing this is
+	// because if the user quits before the vault is fully initialized
+	// (probably during password prompt since it's blocking), they will
+	// be able to run init again a second time.
+	pass, err := pio.PromptPass("Please enter a strong master password")
+	if err != nil {
+		log.Fatalf("Could not read password: %s", err.Error())
+	}
+
 	if needsDir {
 		err = os.Mkdir(passDir, 0700)
 		if err != nil {
@@ -84,11 +93,6 @@ func Init() {
 			log.Fatalf("Could not save site file: %s", err.Error())
 		}
 		sf.Close()
-	}
-
-	pass, err := pio.PromptPass("Please enter a strong master password")
-	if err != nil {
-		log.Fatalf("Could not read password: %s", err.Error())
 	}
 
 	// Generate a master password salt.

@@ -8,6 +8,7 @@ import (
 	"github.com/ejcx/passgo/generate"
 	"github.com/ejcx/passgo/initialize"
 	"github.com/ejcx/passgo/insert"
+	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/show"
 	"github.com/spf13/cobra"
 )
@@ -21,8 +22,16 @@ var (
 	RootCmd  = &cobra.Command{
 		Use:   "passgo",
 		Short: "Print the contents of the vault.",
+		Long: `Print the contents of the vault. If you have
+not yet initialized your vault, it is necessary to run
+the init subcommand in order to create your passgo
+directory, and initialize your cryptographic keys.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			show.ListAll()
+			if exists, _ := pio.PassFileDirExists(); exists {
+				show.ListAll()
+			} else {
+				cmd.Help()
+			}
 		},
 	}
 	versionCmd = &cobra.Command{
