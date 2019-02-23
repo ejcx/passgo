@@ -186,7 +186,6 @@ func (s *SiteInfo) AddFile(fileBytes []byte, filename string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(fileDirExists)
 	if !fileDirExists {
 		err = os.Mkdir(encFileDir, 0700)
 		if err != nil {

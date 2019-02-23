@@ -9,7 +9,6 @@ import (
 
 	"github.com/ejcx/passgo/pc"
 	"github.com/ejcx/passgo/pio"
-	"github.com/ejcx/passgo/sync"
 	"golang.org/x/crypto/nacl/box"
 )
 
@@ -155,6 +154,4 @@ func Init() {
 	if err = passConfig.SaveFile(); err != nil {
 		log.Fatalf("Could not write to config file: %s", err.Error())
 	}
-
-	sync.Initialize()
 }

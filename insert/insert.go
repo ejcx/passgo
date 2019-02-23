@@ -10,7 +10,6 @@ import (
 
 	"github.com/ejcx/passgo/pc"
 	"github.com/ejcx/passgo/pio"
-	"github.com/ejcx/passgo/sync"
 	"golang.org/x/crypto/nacl/box"
 )
 
@@ -63,7 +62,6 @@ func Password(name string) {
 	if err != nil {
 		log.Fatalf("Could not save site file: %s", err.Error())
 	}
-	sync.InsertCommit(name)
 }
 
 // File is used to add a new file entry to the vault.
@@ -118,5 +116,4 @@ func File(path, filename string) {
 	if err != nil {
 		log.Fatalf("Could not save site file after file insert: %s", err.Error())
 	}
-	sync.InsertCommit(path)
 }

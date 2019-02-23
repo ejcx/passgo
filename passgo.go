@@ -1,30 +1,24 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"log"
 	"strconv"
-	"strings"
 
 	"github.com/ejcx/passgo/edit"
 	"github.com/ejcx/passgo/generate"
 	"github.com/ejcx/passgo/initialize"
 	"github.com/ejcx/passgo/insert"
-	"github.com/ejcx/passgo/pc"
-	"github.com/ejcx/passgo/pio"
 	"github.com/ejcx/passgo/show"
-	"github.com/ejcx/passgo/sync"
 	"github.com/spf13/cobra"
 )
 
 const (
-	ALLARGS = -1
 	version = `v2.0`
 )
 
 var (
-	RootCmd = &cobra.Command{
+	copyPass bool
+	RootCmd  = &cobra.Command{
 		Use:   "passgo",
 		Short: "Print the contents of the vault.",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -38,144 +32,135 @@ var (
 			fmt.Println(version)
 		},
 	}
-	// copyPass indicates that the shown password should be copied to the clipboard.
-	copyPass = flag.Bool("copy", false, "If true, copy password to clipboard instead of displaying it")
-
-	usage = `Usage:
-	passgo
-		Print the contents of the vault.
-	passgo show site-path
-		Print the password of a passgo entry.
-	passgo init
-		Initialize the .passgo directory, and generate your secret keys.
-	passgo insert site-path
-		Add a site to your password store. This site can optionally be a part
+	initCmd = &cobra.Command{
+		Use:   "init",
+		Long:  "Initialize the .passgo directory, and generate your secret keys",
+		Args:  cobra.NoArgs,
+		Short: "Initialize your passgo vault",
+		Run: func(cmd *cobra.Command, args []string) {
+			initialize.Init()
+		},
+	}
+	insertCmd = &cobra.Command{
+		Use:   "insert",
+		Short: "Initialize your passgo vault",
+		Args:  cobra.ExactArgs(1),
+		Long: `Add a site to your password store. This site can optionally be a part
 		of a group by prepending a group name and slash to the site name.
-		Will prompt for confirmation when a site path is not unique.
-		passgo
-	passgo rename site-path
-		Rename an entry in the password vault.
-	passgo edit site-path
-		Change the password of a site in the vault.
-	passgo generate length=24
-		Prints a randomly generated password. The length of this password defaults
-		to 24. If a password length is specified as greater than 2048 then generate
-    will fail.
-	passgo find site-path
-		Prints all sites that contain the site-path. Used to print just one group
-		or all sites that contain a certain word in the group or name.
-	passgo ls site-path
-		An alias for the find subcommand.
-	passgo remove site-path
-		Remove a site from the password vault by specifying the entire site-path.
-	passgo removefile site-path
-		Remove a file from the vault by specifying the entire file-path.
-	passgo rm site-path
-		An alias for remove.
-	passgo rmfile site-path
-		An alias for removefile.
-	passgo pull
-		Pull will perform a git pull and sync the changes in the remote git
-		repository with your local repo.
-	passgo integrity
-		Update the integrity hash of your password store if you are planning
-		to manually push to the server.
-	passgo usage
-		Print this message!
-`
+		Will prompt for confirmation when a site path is not unique.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			pathName := args[0]
+			insert.Password(pathName)
+		},
+	}
+	showCmd = &cobra.Command{
+		Use:   "show",
+		Short: "Print the password of a passgo entry.",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			path := args[0]
+			show.Site(path, copyPass)
+		},
+	}
+	generateCmd = &cobra.Command{
+		Use:   "generate",
+		Short: "Generate a secure password",
+		Long: `Prints a randomly generated password. The length of this password defaults
+to 24. If a password length is specified as greater than 2048 then generate
+will fail.`,
+		Args: cobra.RangeArgs(0, 1),
+		Run: func(cmd *cobra.Command, args []string) {
+			pwlen := -1
+			if len(args) != 0 {
+				pwlenStr := args[0]
+				pwlenint, err := strconv.Atoi(pwlenStr)
+				if err != nil {
+					pwlen = -1
+				} else {
+					pwlen = pwlenint
+				}
+			}
+			pass := generate.Generate(pwlen)
+			fmt.Println(pass)
+		},
+	}
+	findCmd = &cobra.Command{
+		Use:     "find",
+		Aliases: []string{"ls"},
+		Short:   "Find a site that contains the site-path.",
+		Long: `Prints all sites that contain the site-path. Used to print just
+one group or all sites that contain a certain word in the group or name`,
+		Args: cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			path := args[0]
+			show.Find(path)
+		},
+	}
+	renameCmd = &cobra.Command{
+		Use:   "rename",
+		Short: "Rename an entry in the password vault",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			path := args[0]
+			edit.Rename(path)
+		},
+	}
+	editCmd = &cobra.Command{
+		Use:   "edit",
+		Short: "Change the password of a site in the vault.",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			path := args[0]
+			edit.Edit(path)
+		},
+	}
+	removeCmd = &cobra.Command{
+		Use:     "remove",
+		Aliases: []string{"rm"},
+		Short:   "Remove a site from the password vault by specifying the entire site-path.",
+		Args:    cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			path := args[0]
+			edit.RemovePassword(path)
+		},
+	}
+	removeFileCmd = &cobra.Command{
+		Use:     "remove-file",
+		Aliases: []string{"rm-file", "removefile", "rmfile"},
+		Short:   "Remove a file from the vault by specifying the entire file-path.",
+		Args:    cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			path := args[0]
+			edit.RemoveFile(path)
+		},
+	}
+	insertFileCmd = &cobra.Command{
+		Use:     "insert-file",
+		Aliases: []string{"insertfile"},
+		Short:   "Insert a file in to your vault",
+		Args:    cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			path := args[0]
+			filename := args[1]
+			insert.File(path, filename)
+		},
+	}
 )
 
 func init() {
+	showCmd.PersistentFlags().BoolVarP(&copyPass, "copy", "c", false, "Copy your password to the clipboard")
+	RootCmd.AddCommand(findCmd)
+	RootCmd.AddCommand(generateCmd)
+	RootCmd.AddCommand(initCmd)
+	RootCmd.AddCommand(insertCmd)
+	RootCmd.AddCommand(insertFileCmd)
+	RootCmd.AddCommand(removeCmd)
+	RootCmd.AddCommand(removeFileCmd)
+	RootCmd.AddCommand(renameCmd)
+	RootCmd.AddCommand(showCmd)
 	RootCmd.AddCommand(versionCmd)
 }
+
 func main() {
 	RootCmd.Execute()
-}
-
-func run() {
-	// Check to see if this user is under attack.
-	pio.CheckAttackFile()
-
-	flag.Parse()
-
-	// Default behavior of just running the command is listing all sites.
-	if len(flag.Args()) < 1 {
-		show.ListAll()
-		return
-	}
-
-	// subArgs is used by subcommands to retreive only their args.
-	subArgs := flag.Args()[1:]
-	switch flag.Args()[0] {
-	case "edit":
-		path := getSubArguments(subArgs, ALLARGS)
-		edit.Edit(path)
-	case "ls", "find":
-		path := getSubArguments(subArgs, ALLARGS)
-		show.Find(path)
-	case "generate":
-		pwlenStr := getSubArguments(subArgs, 0)
-		pwlen, err := strconv.Atoi(pwlenStr)
-		if err != nil {
-			pwlen = -1
-		}
-		pass := generate.Generate(pwlen)
-		fmt.Println(pass)
-	case "init":
-		initialize.Init()
-	case "insert":
-		pathName := getSubArguments(subArgs, ALLARGS)
-		insert.Password(pathName)
-	case "integrity":
-		pc.GetSitesIntegrity()
-		sync.Commit(sync.IntegrityCommit)
-	case "rm", "remove":
-		path := getSubArguments(subArgs, ALLARGS)
-		edit.RemovePassword(path)
-	case "rename":
-		path := getSubArguments(subArgs, ALLARGS)
-		edit.Rename(path)
-	case "pull":
-		sync.Pull()
-	case "push":
-		sync.Push()
-	case "remote":
-		remote := getSubArguments(subArgs, 0)
-		sync.Remote(remote)
-	case "clone":
-		repo := getSubArguments(subArgs, 0)
-		sync.Clone(repo)
-	case "show":
-		path := getSubArguments(flag.Args(), 1)
-		show.Site(path, *copyPass)
-	case "insertfile":
-		allArgs := getSubArguments(subArgs, ALLARGS)
-		argList := strings.Split(allArgs, " ")
-		if len(argList) != 2 {
-			log.Fatalln("Incorrect args.")
-		}
-		path := argList[0]
-		filename := argList[1]
-		insert.File(path, filename)
-	case "rmfile", "removefile":
-		path := getSubArguments(subArgs, ALLARGS)
-		edit.RemoveFile(path)
-	}
-}
-
-// getSubArguments requires the list of subarguments and the
-// argument number that you want returned. Non existent args
-// will return an empty string. A negative arg index will
-// return all arguments concatenated as one.
-func getSubArguments(args []string, arg int) string {
-	if len(args) == 0 {
-		return ""
-	}
-	if arg < 0 {
-		return strings.Join(args, " ")
-	}
-	if len(args) < arg+1 {
-		log.Fatalf("Not enough args")
-	}
-	return args[arg]
 }

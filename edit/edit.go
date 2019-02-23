@@ -18,7 +18,6 @@ import (
 
 	"github.com/ejcx/passgo/pc"
 	"github.com/ejcx/passgo/pio"
-	"github.com/ejcx/passgo/sync"
 )
 
 // Remove is used to remove a site entry from the password vault given a path.
@@ -53,7 +52,6 @@ func remove(path string, removeFile bool) {
 	if err != nil {
 		log.Fatalf("Could not update password vault: %s", err.Error())
 	}
-	sync.RemoveCommit(path)
 }
 
 // RemovePassword is called to remove a password entry.
@@ -81,7 +79,6 @@ func Edit(path string) {
 			if err != nil {
 				log.Fatalf("Could not edit %s: %s", path, err)
 			}
-			sync.RegenerateCommit(path)
 		}
 	}
 }
@@ -104,7 +101,6 @@ func Rename(path string) {
 			if err != nil {
 				log.Fatalf("Could not renmae %s: %s", path, err)
 			}
-			sync.RenameCommit(path, newName)
 		}
 	}
 }
