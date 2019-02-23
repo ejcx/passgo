@@ -64,6 +64,18 @@ func Init() {
 			log.Fatalf("Could not create passgo vault: %s", err.Error())
 		}
 	}
+	if fileDirExists, err := pio.PassFileDirExists(); err == nil {
+		if !fileDirExists {
+			encryptedFileDir, err := pio.GetEncryptedFilesDir()
+			if err != nil {
+				log.Fatalf("Could not get encrypted files dir: %s", err)
+			}
+			err = os.Mkdir(encryptedFileDir, 0700)
+			if err != nil {
+				log.Fatalf("Could not create encrypted file dir: %s", err)
+			}
+		}
+	}
 
 	// Don't just go around deleting things for users or prompting them
 	// to delete things. Make them do this manaully. Maybe this saves 1

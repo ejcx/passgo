@@ -27,6 +27,7 @@ not yet initialized your vault, it is necessary to run
 the init subcommand in order to create your passgo
 directory, and initialize your cryptographic keys.`,
 		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println(pio.PassFileDirExists())
 			if exists, _ := pio.PassFileDirExists(); exists {
 				show.ListAll()
 			} else {

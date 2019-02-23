@@ -22,8 +22,6 @@ const (
 	ConfigFileName = "config"
 	// SiteFileName is the name of the passgo password store file.
 	SiteFileName = "sites.json"
-	// AttackFileName is the name of the passgo under attack file.
-	AttackFileName = "attacked"
 	// EncryptedFileDir is the name of the passgo encrypted file dir.
 	EncryptedFileDir = "files"
 )
@@ -335,37 +333,6 @@ func Prompt(prompt string) (s string, err error) {
 	stdin := bufio.NewReader(os.Stdin)
 	l, _, err := stdin.ReadLine()
 	return string(l), err
-}
-
-// GetAttackFileName returns the full path of the attack file.
-func GetAttackFileName() (f string, err error) {
-	d, err := GetPassDir()
-	if err == nil {
-		f = filepath.Join(d, AttackFileName)
-	}
-	return
-}
-
-// CreateAttack will create the attack file.
-func CreateAttack() error {
-	fn, err := GetAttackFileName()
-	if err != nil {
-		return err
-	}
-	f, err := os.Create(fn)
-	defer f.Close()
-	return err
-}
-
-// CheckAttackFile will determine if the attack file exists.
-func CheckAttackFile() {
-	fn, err := GetAttackFileName()
-	if err != nil {
-		log.Fatalf("Could not get home directory: %s", fn)
-	}
-	if _, err := os.Stat(fn); err == nil {
-		log.Fatalf("You are under attack. Remove file %s to proceed.", fn)
-	}
 }
 
 func ToClipboard(s string) {
