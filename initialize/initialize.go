@@ -1,15 +1,13 @@
 package initialize
 
 import (
-	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha256"
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/ejcx/passgo/pc"
 	"github.com/ejcx/passgo/pio"
-	"github.com/ejcx/passgo/sync"
 	"golang.org/x/crypto/nacl/box"
 )
 
@@ -50,10 +48,33 @@ func Init() {
 		log.Fatalf("Could not get pass config: %s", err.Error())
 	}
 
+	// Prompt for the password immediately. The reason for doing this is
+	// because if the user quits before the vault is fully initialized
+	// (probably during password prompt since it's blocking), they will
+	// be able to run init again a second time.
+	pass, err := pio.PromptPass("Please enter a strong master password")
+	if err != nil {
+		log.Fatalf("Could not read password: %s", err.Error())
+	}
+
 	if needsDir {
 		err = os.Mkdir(passDir, 0700)
 		if err != nil {
 			log.Fatalf("Could not create passgo vault: %s", err.Error())
+		} else {
+			fmt.Printf("Created directory to store passwords: %s\n", passDir)
+		}
+	}
+	if fileDirExists, err := pio.PassFileDirExists(); err == nil {
+		if !fileDirExists {
+			encryptedFileDir, err := pio.GetEncryptedFilesDir()
+			if err != nil {
+				log.Fatalf("Could not get encrypted files dir: %s", err)
+			}
+			err = os.Mkdir(encryptedFileDir, 0700)
+			if err != nil {
+				log.Fatalf("Could not create encrypted file dir: %s", err)
+			}
 		}
 	}
 
@@ -87,11 +108,6 @@ func Init() {
 		sf.Close()
 	}
 
-	pass, err := pio.PromptPass("Please enter a strong master password")
-	if err != nil {
-		log.Fatalf("Could not read password: %s", err.Error())
-	}
-
 	// Generate a master password salt.
 	var keySalt [32]byte
 	_, err = rand.Read(keySalt[:])
@@ -123,38 +139,14 @@ func Init() {
 		log.Fatalf("Could not encrypt master key: %s", err.Error())
 	}
 
-	hmacKey, err := pc.Scrypt([]byte(pass), hmacSalt[:])
-	if err != nil {
-		log.Fatalf("Could not generate secondary key from pass: %s", err.Error())
-	}
-
-	// Keep an hmac of the public key alongside your public key so that malicious
-	// servers can be detected.
-	mac := hmac.New(sha256.New, hmacKey[:])
-	_, err = mac.Write(pub[:])
-	if err != nil {
-		log.Fatalf("Could not write to hmac reader: %s", err.Error())
-	}
-	pubKeyHmac := mac.Sum(nil)
-
-	var siteHmacSalt [32]byte
-	_, err = rand.Read(siteHmacSalt[:])
-	if err != nil {
-		log.Fatalf("Could not generate site hmac salt")
-	}
-
 	passConfig := pio.ConfigFile{
 		MasterKeyPrivSealed: sealedMasterPrivKey,
-		PubKeyHmac:          pubKeyHmac,
 		MasterPubKey:        *pub,
 		MasterPassKeySalt:   keySalt,
-		HmacSalt:            hmacSalt,
-		SiteHmacSalt:        siteHmacSalt,
 	}
 
 	if err = passConfig.SaveFile(); err != nil {
 		log.Fatalf("Could not write to config file: %s", err.Error())
 	}
-
-	sync.Initialize()
+	fmt.Println("Password Vault successfully initialized")
 }

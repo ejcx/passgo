@@ -18,20 +18,16 @@ import (
 
 	"github.com/ejcx/passgo/pc"
 	"github.com/ejcx/passgo/pio"
-	"github.com/ejcx/passgo/sync"
 )
 
 // Remove is used to remove a site entry from the password vault given a path.
-func remove(path string, removeFile bool) {
+func remove(path string) {
 	vault := pio.GetVault()
 	pathIndex := -1
 	for jj, siteInfo := range vault {
 		if siteInfo.Name == path {
 			pathIndex = jj
-			if removeFile {
-				if !siteInfo.IsFile {
-					log.Fatalf("Attempting to remove a non-file entry. Use `passgo rm` not `passgo rmfile`")
-				}
+			if siteInfo.IsFile {
 				encFileDir, err := pio.GetEncryptedFilesDir()
 				if err != nil {
 					log.Fatalf("Could not get encrypted file path for deleting: %s", err.Error())
@@ -53,17 +49,11 @@ func remove(path string, removeFile bool) {
 	if err != nil {
 		log.Fatalf("Could not update password vault: %s", err.Error())
 	}
-	sync.RemoveCommit(path)
 }
 
 // RemovePassword is called to remove a password entry.
 func RemovePassword(path string) {
-	remove(path, false)
-}
-
-// RemoveFile is called to remove a file and siteinfo entry.
-func RemoveFile(path string) {
-	remove(path, true)
+	remove(path)
 }
 
 // Edit is used to change the password of a site. New keys MUST be generated.
@@ -71,7 +61,7 @@ func Edit(path string) {
 	vault := pio.GetVault()
 	for jj, siteInfo := range vault {
 		if siteInfo.Name == path {
-			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
+			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s: ", path))
 			if err != nil {
 				log.Fatalf("Could not get new password for %s: %s", path, err)
 			}
@@ -81,7 +71,6 @@ func Edit(path string) {
 			if err != nil {
 				log.Fatalf("Could not edit %s: %s", path, err)
 			}
-			sync.RegenerateCommit(path)
 		}
 	}
 }
@@ -91,7 +80,7 @@ func Rename(path string) {
 	vault := pio.GetVault()
 	for jj, siteInfo := range vault {
 		if siteInfo.Name == path {
-			newName, err := pio.Prompt(fmt.Sprintf("Enter new site name for %s:", path))
+			newName, err := pio.Prompt(fmt.Sprintf("Enter new site name for %s: ", path))
 			if err != nil {
 				log.Fatalf("Could not get new site name from user: %s", err.Error())
 			}
@@ -104,7 +93,6 @@ func Rename(path string) {
 			if err != nil {
 				log.Fatalf("Could not renmae %s: %s", path, err)
 			}
-			sync.RenameCommit(path, newName)
 		}
 	}
 }

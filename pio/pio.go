@@ -18,12 +18,11 @@ import (
 )
 
 const (
+	PASSGODIR = "PASSGODIR"
 	// ConfigFileName is the name of the passgo config file.
 	ConfigFileName = "config"
 	// SiteFileName is the name of the passgo password store file.
 	SiteFileName = "sites.json"
-	// AttackFileName is the name of the passgo under attack file.
-	AttackFileName = "attacked"
 	// EncryptedFileDir is the name of the passgo encrypted file dir.
 	EncryptedFileDir = "files"
 )
@@ -138,7 +137,7 @@ func GetHomeDir() (d string, err error) {
 
 // GetPassDir is used to return the user's passgo directory.
 func GetPassDir() (d string, err error) {
-	d, ok := os.LookupEnv("PASSGODIR")
+	d, ok := os.LookupEnv(PASSGODIR)
 	if !ok {
 		home, err := GetHomeDir()
 		if err == nil {
@@ -186,7 +185,6 @@ func (s *SiteInfo) AddFile(fileBytes []byte, filename string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(fileDirExists)
 	if !fileDirExists {
 		err = os.Mkdir(encFileDir, 0700)
 		if err != nil {
@@ -194,6 +192,11 @@ func (s *SiteInfo) AddFile(fileBytes []byte, filename string) error {
 		}
 	}
 	encFilePath := filepath.Join(encFileDir, filename)
+	dir, _ := filepath.Split(encFilePath)
+	err = os.MkdirAll(dir, 0700)
+	if err != nil {
+		log.Fatalf("Could not create subdirectory: %s", err.Error())
+	}
 	err = ioutil.WriteFile(encFilePath, fileBytes, 0666)
 	if err != nil {
 		return err
@@ -336,37 +339,6 @@ func Prompt(prompt string) (s string, err error) {
 	stdin := bufio.NewReader(os.Stdin)
 	l, _, err := stdin.ReadLine()
 	return string(l), err
-}
-
-// GetAttackFileName returns the full path of the attack file.
-func GetAttackFileName() (f string, err error) {
-	d, err := GetPassDir()
-	if err == nil {
-		f = filepath.Join(d, AttackFileName)
-	}
-	return
-}
-
-// CreateAttack will create the attack file.
-func CreateAttack() error {
-	fn, err := GetAttackFileName()
-	if err != nil {
-		return err
-	}
-	f, err := os.Create(fn)
-	defer f.Close()
-	return err
-}
-
-// CheckAttackFile will determine if the attack file exists.
-func CheckAttackFile() {
-	fn, err := GetAttackFileName()
-	if err != nil {
-		log.Fatalf("Could not get home directory: %s", fn)
-	}
-	if _, err := os.Stat(fn); err == nil {
-		log.Fatalf("You are under attack. Remove file %s to proceed.", fn)
-	}
 }
 
 func ToClipboard(s string) {

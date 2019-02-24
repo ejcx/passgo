@@ -4,9 +4,7 @@
 package pc
 
 import (
-	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -15,6 +13,7 @@ import (
 	"log"
 
 	"github.com/ejcx/passgo/pio"
+	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/crypto/nacl/secretbox"
 	"golang.org/x/crypto/scrypt"
@@ -153,6 +152,16 @@ func GetMasterKey() (masterPrivKey [32]byte) {
 	if err != nil {
 		log.Fatalf("Could not decrypt private key: %s", err.Error())
 	}
+
+	// Sanity check the public key that is stored in the config file.
+	// If the public key has changed then we should error out and
+	// let the user know.
+	publicKey := new([32]byte)
+	curve25519.ScalarBaseMult(publicKey, &masterPrivKey)
+	if *publicKey != configFile.MasterPubKey {
+		log.Fatalf("Vault integrity cannot be verified: %s", errors.New("Wrong master public key"))
+	}
+
 	return
 }
 
@@ -271,32 +280,6 @@ func (specs *PasswordSpecs) MeetsSpecs(pass string) bool {
 	}
 	// The answer is false if the optmiziation didn't return true.
 	return false
-}
-
-// GetSitesIntegrity is used to update the sites vault integrity file.
-func GetSitesIntegrity() pio.ConfigFile {
-	c, err := pio.ReadConfig()
-	if err != nil {
-		log.Fatalf("Could not read config: %s", err.Error())
-	}
-	pass, err := pio.PromptPass(pio.MasterPassPrompt)
-	if err != nil {
-		log.Fatalf("Could not get master password: %s", err.Error())
-	}
-	vaultBytes := pio.GetSiteFileBytes()
-
-	siteHmacKey, err := Scrypt([]byte(pass), c.SiteHmacSalt[:])
-	if err != nil {
-		log.Fatalf("Could not generate site hmac key: %s", err.Error())
-	}
-	mac := hmac.New(sha256.New, siteHmacKey[:])
-	_, err = mac.Write(vaultBytes)
-	if err != nil {
-		log.Fatalf("Could not write to hmac: %s", err.Error())
-	}
-	vaultMac := mac.Sum(nil)
-	c.SiteHmac = vaultMac
-	return c
 }
 
 // GenHexString will generate a random 32 character hex string.
