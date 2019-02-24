@@ -50,29 +50,32 @@ directory, and initialize your cryptographic keys.`,
 		},
 	}
 	insertCmd = &cobra.Command{
-		Use:   "insert",
-		Short: "Initialize your passgo vault",
-		Args:  cobra.ExactArgs(1),
+		Use:     "insert",
+		Short:   "Initialize your passgo vault",
+		Example: "passgo insert money/bank.com",
+		Args:    cobra.ExactArgs(1),
 		Long: `Add a site to your password store. This site can optionally be a part
-		of a group by prepending a group name and slash to the site name.
-		Will prompt for confirmation when a site path is not unique.`,
+of a group by prepending a group name and slash to the site name.
+Will prompt for confirmation when a site path is not unique.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			pathName := args[0]
 			insert.Password(pathName)
 		},
 	}
 	showCmd = &cobra.Command{
-		Use:   "show",
-		Short: "Print the password of a passgo entry.",
-		Args:  cobra.ExactArgs(1),
+		Use:     "show",
+		Example: "passgo show money/bank.com",
+		Short:   "Print the password of a passgo entry.",
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			path := args[0]
 			show.Site(path, copyPass)
 		},
 	}
 	generateCmd = &cobra.Command{
-		Use:   "generate",
-		Short: "Generate a secure password",
+		Use:     "generate",
+		Short:   "Generate a secure password",
+		Example: "passgo generate",
 		Long: `Prints a randomly generated password. The length of this password defaults
 to 24. If a password length is specified as greater than 2048 then generate
 will fail.`,
@@ -95,6 +98,7 @@ will fail.`,
 	findCmd = &cobra.Command{
 		Use:     "find",
 		Aliases: []string{"ls"},
+		Example: "passgo find bank.com",
 		Short:   "Find a site that contains the site-path.",
 		Long: `Prints all sites that contain the site-path. Used to print just
 one group or all sites that contain a certain word in the group or name`,
@@ -105,18 +109,21 @@ one group or all sites that contain a certain word in the group or name`,
 		},
 	}
 	renameCmd = &cobra.Command{
-		Use:   "rename",
-		Short: "Rename an entry in the password vault",
-		Args:  cobra.ExactArgs(1),
+		Use:     "rename",
+		Short:   "Rename an entry in the password vault",
+		Example: "passgo rename money/bank.com",
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			path := args[0]
 			edit.Rename(path)
 		},
 	}
 	editCmd = &cobra.Command{
-		Use:   "edit",
-		Short: "Change the password of a site in the vault.",
-		Args:  cobra.ExactArgs(1),
+		Use:     "edit",
+		Aliases: []string{"update"},
+		Short:   "Change the password of a site in the vault.",
+		Example: "passgo edit money/bank.com",
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			path := args[0]
 			edit.Edit(path)
@@ -125,6 +132,7 @@ one group or all sites that contain a certain word in the group or name`,
 	removeCmd = &cobra.Command{
 		Use:     "remove",
 		Aliases: []string{"rm"},
+		Example: "passgo remove money/bank.com",
 		Short:   "Remove a site from the password vault by specifying the entire site-path.",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -134,6 +142,7 @@ one group or all sites that contain a certain word in the group or name`,
 	}
 	removeFileCmd = &cobra.Command{
 		Use:     "remove-file",
+		Example: "passgo remove-file money/budget.csv",
 		Aliases: []string{"rm-file", "removefile", "rmfile"},
 		Short:   "Remove a file from the vault by specifying the entire file-path.",
 		Args:    cobra.ExactArgs(1),
@@ -145,6 +154,7 @@ one group or all sites that contain a certain word in the group or name`,
 	insertFileCmd = &cobra.Command{
 		Use:     "insert-file",
 		Aliases: []string{"insertfile"},
+		Example: "passgo insert-file money/budget.csv ~/Desktop/budget.csv",
 		Short:   "Insert a file in to your vault",
 		Args:    cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
