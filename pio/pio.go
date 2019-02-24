@@ -192,6 +192,11 @@ func (s *SiteInfo) AddFile(fileBytes []byte, filename string) error {
 		}
 	}
 	encFilePath := filepath.Join(encFileDir, filename)
+	dir, _ := filepath.Split(encFilePath)
+	err = os.MkdirAll(dir, 0700)
+	if err != nil {
+		log.Fatalf("Could not create subdirectory: %s", err.Error())
+	}
 	err = ioutil.WriteFile(encFilePath, fileBytes, 0666)
 	if err != nil {
 		return err

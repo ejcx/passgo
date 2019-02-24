@@ -21,16 +21,13 @@ import (
 )
 
 // Remove is used to remove a site entry from the password vault given a path.
-func remove(path string, removeFile bool) {
+func remove(path string) {
 	vault := pio.GetVault()
 	pathIndex := -1
 	for jj, siteInfo := range vault {
 		if siteInfo.Name == path {
 			pathIndex = jj
-			if removeFile {
-				if !siteInfo.IsFile {
-					log.Fatalf("Attempting to remove a non-file entry. Use `passgo rm` not `passgo rmfile`")
-				}
+			if siteInfo.IsFile {
 				encFileDir, err := pio.GetEncryptedFilesDir()
 				if err != nil {
 					log.Fatalf("Could not get encrypted file path for deleting: %s", err.Error())
@@ -56,12 +53,7 @@ func remove(path string, removeFile bool) {
 
 // RemovePassword is called to remove a password entry.
 func RemovePassword(path string) {
-	remove(path, false)
-}
-
-// RemoveFile is called to remove a file and siteinfo entry.
-func RemoveFile(path string) {
-	remove(path, true)
+	remove(path)
 }
 
 // Edit is used to change the password of a site. New keys MUST be generated.

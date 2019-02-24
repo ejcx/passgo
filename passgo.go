@@ -51,15 +51,21 @@ directory, and initialize your cryptographic keys.`,
 	}
 	insertCmd = &cobra.Command{
 		Use:     "insert",
-		Short:   "Initialize your passgo vault",
+		Short:   "Insert in to your passgo vault",
 		Example: "passgo insert money/bank.com",
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.RangeArgs(1, 2),
 		Long: `Add a site to your password store. This site can optionally be a part
 of a group by prepending a group name and slash to the site name.
 Will prompt for confirmation when a site path is not unique.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			pathName := args[0]
-			insert.Password(pathName)
+			if len(args) == 2 {
+				path := args[0]
+				filename := args[1]
+				insert.File(path, filename)
+			} else {
+				pathName := args[0]
+				insert.Password(pathName)
+			}
 		},
 	}
 	showCmd = &cobra.Command{
@@ -140,29 +146,6 @@ one group or all sites that contain a certain word in the group or name`,
 			edit.RemovePassword(path)
 		},
 	}
-	removeFileCmd = &cobra.Command{
-		Use:     "remove-file",
-		Example: "passgo remove-file money/budget.csv",
-		Aliases: []string{"rm-file", "removefile", "rmfile"},
-		Short:   "Remove a file from the vault by specifying the entire file-path.",
-		Args:    cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			path := args[0]
-			edit.RemoveFile(path)
-		},
-	}
-	insertFileCmd = &cobra.Command{
-		Use:     "insert-file",
-		Aliases: []string{"insertfile"},
-		Example: "passgo insert-file money/budget.csv ~/Desktop/budget.csv",
-		Short:   "Insert a file in to your vault",
-		Args:    cobra.ExactArgs(2),
-		Run: func(cmd *cobra.Command, args []string) {
-			path := args[0]
-			filename := args[1]
-			insert.File(path, filename)
-		},
-	}
 )
 
 func init() {
@@ -171,9 +154,7 @@ func init() {
 	RootCmd.AddCommand(generateCmd)
 	RootCmd.AddCommand(initCmd)
 	RootCmd.AddCommand(insertCmd)
-	RootCmd.AddCommand(insertFileCmd)
 	RootCmd.AddCommand(removeCmd)
-	RootCmd.AddCommand(removeFileCmd)
 	RootCmd.AddCommand(renameCmd)
 	RootCmd.AddCommand(showCmd)
 	RootCmd.AddCommand(versionCmd)

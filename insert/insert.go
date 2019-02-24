@@ -58,7 +58,7 @@ func Password(name string) {
 		PassSealed: passSealed,
 	}
 
-	err = si.AddSite()
+	err = si.AddFile(passSealed, name)
 	if err != nil {
 		log.Fatalf("Could not save site file: %s", err.Error())
 	}
@@ -100,19 +100,14 @@ func File(path, filename string) {
 		log.Fatalf("Could not seal file bytes: %s", err.Error())
 	}
 
-	tokenFile, err := pc.GenHexString()
-	if err != nil {
-		log.Fatalf("Could not generate random string: %s", err.Error())
-	}
-
 	si := pio.SiteInfo{
 		PubKey:   *pub,
 		Name:     path,
 		IsFile:   true,
-		FileName: tokenFile,
+		FileName: path,
 	}
 
-	err = si.AddFile(fileSealed, tokenFile)
+	err = si.AddFile(fileSealed, path)
 	if err != nil {
 		log.Fatalf("Could not save site file after file insert: %s", err.Error())
 	}
