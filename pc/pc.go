@@ -13,6 +13,7 @@ import (
 	"log"
 
 	"github.com/ejcx/passgo/pio"
+	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/nacl/box"
 	"golang.org/x/crypto/nacl/secretbox"
 	"golang.org/x/crypto/scrypt"
@@ -151,6 +152,16 @@ func GetMasterKey() (masterPrivKey [32]byte) {
 	if err != nil {
 		log.Fatalf("Could not decrypt private key: %s", err.Error())
 	}
+
+	// Sanity check the public key that is stored in the config file.
+	// If the public key has changed then we should error out and
+	// let the user know.
+	publicKey := new([32]byte)
+	curve25519.ScalarBaseMult(publicKey, &masterPrivKey)
+	if *publicKey != configFile.MasterPubKey {
+		log.Fatalf("Vault integrity cannot be verified: %s", errors.New("Wrong master public key"))
+	}
+
 	return
 }
 
