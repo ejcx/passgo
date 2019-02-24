@@ -4,9 +4,7 @@
 package pc
 
 import (
-	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -271,32 +269,6 @@ func (specs *PasswordSpecs) MeetsSpecs(pass string) bool {
 	}
 	// The answer is false if the optmiziation didn't return true.
 	return false
-}
-
-// GetSitesIntegrity is used to update the sites vault integrity file.
-func GetSitesIntegrity() pio.ConfigFile {
-	c, err := pio.ReadConfig()
-	if err != nil {
-		log.Fatalf("Could not read config: %s", err.Error())
-	}
-	pass, err := pio.PromptPass(pio.MasterPassPrompt)
-	if err != nil {
-		log.Fatalf("Could not get master password: %s", err.Error())
-	}
-	vaultBytes := pio.GetSiteFileBytes()
-
-	siteHmacKey, err := Scrypt([]byte(pass), c.SiteHmacSalt[:])
-	if err != nil {
-		log.Fatalf("Could not generate site hmac key: %s", err.Error())
-	}
-	mac := hmac.New(sha256.New, siteHmacKey[:])
-	_, err = mac.Write(vaultBytes)
-	if err != nil {
-		log.Fatalf("Could not write to hmac: %s", err.Error())
-	}
-	vaultMac := mac.Sum(nil)
-	c.SiteHmac = vaultMac
-	return c
 }
 
 // GenHexString will generate a random 32 character hex string.

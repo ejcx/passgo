@@ -69,7 +69,7 @@ Here we are adding mint.com to the password store within the money group.
 
 ### Inserting a file
 ```
-$ passgo insert-file money/budget.csv budget.csv
+$ passgo insert money/budget.csv budget.csv
 ```
 
 Adding a file works almost the same as insert. Instead it has an extra argument. The file that you want to add to your vault is the final argument. Grouping works the same way with `insert-file` as `insert`.
@@ -116,7 +116,7 @@ $ passgo generate 8
 passgo can also create randomly generated passwords. The default length of passgo generated passwords is 24 characters. This length can be changed by passing an optional length to the generate subcommand.
 
 
-### Searching password vault
+### Searching the vault
 ```
  $ passgo find money
  └──money
@@ -129,7 +129,7 @@ passgo can also create randomly generated passwords. The default length of passg
 `find` and `ls` can both be used to search for all sites that contain a particular substring. It's good for printing out groups of sites as well. `passgo ls` is an alias of `passgo find`.
 
 
-### Deleting a password
+### Deleting a vault entry
 ```
 $ passgo
 ├──bb
@@ -151,12 +151,6 @@ $ passgo
 remove is used for removing sites from the password vault. `passgo rm` is an alias of `passgo remove`.
 
 
-### Deleting a file
-```
-$ passgo remove-file money/budget.csv
-```
-
-`remove-file` is used for removing files from the password vault. `passgo remove-file` is an alias of `removefile`, `rm-file`, `rmfile`, and `remove-file`. `remove-file` works the same way as remove, except it only works on file entries in your vault.
 
 ### Getting Help
 ```

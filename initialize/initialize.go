@@ -1,9 +1,7 @@
 package initialize
 
 import (
-	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha256"
 	"fmt"
 	"log"
 	"os"
@@ -141,33 +139,10 @@ func Init() {
 		log.Fatalf("Could not encrypt master key: %s", err.Error())
 	}
 
-	hmacKey, err := pc.Scrypt([]byte(pass), hmacSalt[:])
-	if err != nil {
-		log.Fatalf("Could not generate secondary key from pass: %s", err.Error())
-	}
-
-	// Keep an hmac of the public key alongside your public key so that malicious
-	// servers can be detected.
-	mac := hmac.New(sha256.New, hmacKey[:])
-	_, err = mac.Write(pub[:])
-	if err != nil {
-		log.Fatalf("Could not write to hmac reader: %s", err.Error())
-	}
-	pubKeyHmac := mac.Sum(nil)
-
-	var siteHmacSalt [32]byte
-	_, err = rand.Read(siteHmacSalt[:])
-	if err != nil {
-		log.Fatalf("Could not generate site hmac salt")
-	}
-
 	passConfig := pio.ConfigFile{
 		MasterKeyPrivSealed: sealedMasterPrivKey,
-		PubKeyHmac:          pubKeyHmac,
 		MasterPubKey:        *pub,
 		MasterPassKeySalt:   keySalt,
-		HmacSalt:            hmacSalt,
-		SiteHmacSalt:        siteHmacSalt,
 	}
 
 	if err = passConfig.SaveFile(); err != nil {
