@@ -69,7 +69,7 @@ func Edit(path string) {
 	vault := pio.GetVault()
 	for jj, siteInfo := range vault {
 		if siteInfo.Name == path {
-			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s", path))
+			newPass, err := pio.PromptPass(fmt.Sprintf("Enter new password for %s: ", path))
 			if err != nil {
 				log.Fatalf("Could not get new password for %s: %s", path, err)
 			}
@@ -88,7 +88,7 @@ func Rename(path string) {
 	vault := pio.GetVault()
 	for jj, siteInfo := range vault {
 		if siteInfo.Name == path {
-			newName, err := pio.Prompt(fmt.Sprintf("Enter new site name for %s:", path))
+			newName, err := pio.Prompt(fmt.Sprintf("Enter new site name for %s: ", path))
 			if err != nil {
 				log.Fatalf("Could not get new site name from user: %s", err.Error())
 			}
