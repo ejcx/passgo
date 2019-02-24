@@ -18,6 +18,7 @@ import (
 )
 
 const (
+	PASSGODIR = "PASSGODIR"
 	// ConfigFileName is the name of the passgo config file.
 	ConfigFileName = "config"
 	// SiteFileName is the name of the passgo password store file.
@@ -136,7 +137,7 @@ func GetHomeDir() (d string, err error) {
 
 // GetPassDir is used to return the user's passgo directory.
 func GetPassDir() (d string, err error) {
-	d, ok := os.LookupEnv("PASSGODIR")
+	d, ok := os.LookupEnv(PASSGODIR)
 	if !ok {
 		home, err := GetHomeDir()
 		if err == nil {

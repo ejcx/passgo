@@ -12,7 +12,6 @@ import (
 
 	"github.com/ejcx/passgo/pc"
 	"github.com/ejcx/passgo/pio"
-	"github.com/xlab/treeprint"
 )
 
 type searchType int
@@ -125,14 +124,39 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, co
 }
 
 func showResults(allSites map[string][]pio.SiteInfo) {
-	tree := treeprint.New()
+	fmt.Println(".")
+	counter := 1
 	for group, siteList := range allSites {
-		branch := tree.AddBranch(group)
+		siteCounter := 1
 		for _, site := range siteList {
-			branch.AddNode(site.Name)
+			preGroup := regPrefix
+			preName := innerPrefix + regPrefix
+			if counter == len(allSites) {
+				preGroup = lastPrefix
+				sitePrefix := innerLastPrefix
+				if group == "" {
+					sitePrefix = ""
+				}
+				preName = sitePrefix + regPrefix
+				if siteCounter == len(siteList) {
+					preName = sitePrefix + lastPrefix
+				}
+			} else {
+				if siteCounter == len(siteList) {
+					preName = innerPrefix + lastPrefix
+				}
+			}
+
+			if siteCounter == 1 {
+				if group != "" {
+					fmt.Println(preGroup + group)
+				}
+			}
+			fmt.Printf("%s%s\n", preName, site.Name)
+			siteCounter++
 		}
+		counter++
 	}
-	fmt.Println(tree.String())
 }
 
 // SearchAll will perform a search of searchType with optionally used searchFor. It

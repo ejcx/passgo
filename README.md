@@ -6,122 +6,130 @@ passgo is meant to be secure enough that you can publicly post your vault. I've 
 
 ## Getting started with passgo
 
-First make sure you have [installed golang](https://golang.org/doc/install) and set up your [`$GOPATH`](https://github.com/golang/go/wiki/GOPATH).
-
-It's recommend that you add `$GOPATH/bin` to your `$PATH`. This will make any golang executables available as commands in bash for you to use. Add the following to `~/.bashrc` and restart your terminal:
-
 ```bash
-export PATH=$PATH:$GOPATH/bin
+go get -u github.com/ejcx/passgo
 ```
 
-Then you can download gopass, its dependencies and install them all with one command:
+Next create a vault and specify the directory to store passwords in. You will be prompted for your master password:
 
 ```bash
-go get github.com/ejcx/passgo
-```
-
-Next create a vault to store passwords in and a master password:
-
-```bash
-passgo init
+$ passgo init
+Please enter a strong master password:
+2019/02/23 16:54:31 Created directory to store passwords: ~/.passgo
 ```
 
 Finally, to learn more you can either read about the commands listed in this README or run:
 
 ```bash
-passgo usage
+passgo help
 ```
+
+The `--help` argument can be used on any subcommand to describe it and see documentation or examples.
+
+## Configuring passgo
+The `PASSGODIR` environment variable specifies the directory that your vault is in.
+
+I store my vault in the default location `~/.passgo`. All subcommands will respect this environment variable, including `init`
+
 
 ## COMMANDS
 
-#### passgo
-This basic command is used to print out the contents of your password vault. It doesn't require you to enter your master password.
-
+### Listing Passwords
 ```
 $ passgo
-├──mney
+├──money
 |  └──mint.com
-└──anothergroup
+└──another
    └──another.com
 ```
 
+This basic command is used to print out the contents of your password vault. It doesn't require you to enter your master password.
 
-#### passgo init
-Init should only be run one time, before running any other command. It is used for generating your master public private keypair.
 
+### Initializing Vault
 ```
 $ passgo init
 ```
+Init should only be run one time, before running any other command. It is used for generating your master public private keypair.
 
-#### passgo insert group/pass-name
-Adding a site is easy. If you wish to group multiple entries together, it can be accomplished by prepending a group name followed by a slash to the pass-name. Here we are adding mint.com to the password store.
+By default, passgo will create your password vault in the `.passgo` directory within your home directory. You can override this location using the `PASSGODIR` environment variable.
 
+
+
+### Inserting a password
 ```
-$ passgo insert mint.com
-```
-
-Here we are adding mint.com to the password store, but more specifically to the money group. Now, mint.com will be grouped with other sites in the money group.
-
-```
-$ passgo insert mney/mint.com
+$ passgo insert money/mint.com
+Enter password for money/mint.com: 
 ```
 
-#### passgo insertfile group/file-name filepath
-Adding a file works almost the same as insert. Instead it has an extra argument. The file that you want to add to your vault is the final argument. Grouping works the same way with `insertfile` as `insert`.
+Inserting a password in to your vault is easy. If you wish to group multiple entries together, it can be accomplished by prepending a group name followed by a slash to the pass-name. 
 
+Here we are adding mint.com to the password store within the money group.
+
+
+### Inserting a file
 ```
-$ passgo insertfile money/moneyfile.txt expenses.txt
+$ passgo insert-file money/budget.csv budget.csv
 ```
 
-#### passgo show group/pass-name
-Show is used to display a password in standard out. *Previously it was possible to display a password using `passgo group/pass-name` but this is no longer supported*.
+Adding a file works almost the same as insert. Instead it has an extra argument. The file that you want to add to your vault is the final argument. Grouping works the same way with `insert-file` as `insert`.
 
+
+### Retrieving a password
 ```
-$ passgo show mney/mint.com
+$ passgo show money/mint.com
 Enter master password:
 dolladollabills$$1
 ```
-	
-#### passgo rename group/pass-name
-If we add a site and wish to change the name of the site later it is simple to do. Here we rename our mint.com site after misspelling the group name.
 
+Show is used to display a password in standard out.
+
+	
+### Rename a password
 ```
 $ passgo rename mney/mint.com
 Enter new site name for mney/mint.com: money/mint.com
 ```
 
-#### passgo edit group/pass-name
-If you want to securely update a password for an already existing site, the edit command is helpful.
+If a password is added with the wrong name it can be updated later. Here we rename our mint.com site after misspelling the group name.
 
+
+### Updating a password
 ```
 $ passgo edit money/mint.com
 Enter new password for money/mint.com:
 ```
 
-#### passgo generate
-passgo can also create randomly generated passwords. The default length of passgo generated passwords is 24 characters. This length can be changed by passing a length to the generate subcommand.
+If you want to securely update a password for an already existing site, the edit command is helpful.
 
+
+
+### Generating a password
 ```
 $ passgo generate
 %L4^!s,Rry!}s:U<QwliL{vQ
-$ passgo generate 123   
-q)Z5+%#@7[<dk;r\Kw;`}z2|}GjWJpT;Jn[!~(=T6XjVw4`,X(j}YK,fg;m;R#cs3,b7x`SM!Eb[,1`CSJ\1;>[9m$/N`@nI4Qi#Cl&`LQYy;-Y`qH<gv#t@x`M
+
+$ passgo generate 8
+[;K6otS3
 ```
 
-#### passgo find sub-name
-find can be used to search for all sites that contain a particular substring. It's good for printing out groups of sites as well. `passgo ls` is an alias of `passgo find`.
+passgo can also create randomly generated passwords. The default length of passgo generated passwords is 24 characters. This length can be changed by passing an optional length to the generate subcommand.
+
+
+### Searching password vault
 ```
  $ passgo find money
  └──money
     └──mint.com
+
  $ passgo ls money
  └──money
     └──mint.com
 ```
+`find` and `ls` can both be used to search for all sites that contain a particular substring. It's good for printing out groups of sites as well. `passgo ls` is an alias of `passgo find`.
 
-#### passgo remove group/pass-name
-remove is used for removing sites from the password vault. `passgo rm` is an alias of `passgo remove`.
 
+### Deleting a password
 ```
 $ passgo
 ├──bb
@@ -130,7 +138,9 @@ $ passgo
 |  └──somethingelse.com
 └──twiinsen.com
    └──bbbbb
+
 $ passgo remove bb/ff
+
 $ passgo
 ├──something
 |  └──somethingelse.com
@@ -138,61 +148,23 @@ $ passgo
    └──bbbbb
 ```
 
-#### passgo removefile group/file-name
-removefile is used for removing files from the password vault. `passgo rmfile` is an alias of `passgo removefile`. removefile works the same way as remove, except it only works on file entries in your vault.
+remove is used for removing sites from the password vault. `passgo rm` is an alias of `passgo remove`.
 
+
+### Deleting a file
 ```
-$ passgo rmfile money/moneyfile.txt
-```
-
-#### passgo integrity
-The integrity subcommand is used to manually generate and save the integrity hash of the site vault. Sometimes git issues arise and some manual intervention is necessary. Run this command first.
-
-#### passgo remote git-url
-passgo can sync your password store to a remote git repository. The remote subcommand is used to add a git remote to your local passgo git repository.
-
-```
-$ passgo remote https://github.com/ejcx/password-vault.git
-$ passgo insert work/email
-Enter password for work/email:
-$ passgo push
+$ passgo remove-file money/budget.csv
 ```
 
-#### passgo push
-Sync your local changes to your remote git repository.
+`remove-file` is used for removing files from the password vault. `passgo remove-file` is an alias of `removefile`, `rm-file`, `rmfile`, and `remove-file`. `remove-file` works the same way as remove, except it only works on file entries in your vault.
 
-#### passgo pull
-Sync your local passgo directory with your remote git repository.
-
+### Getting Help
 ```
-$ passgo
-└──asdf
-   └──bb
-$ passgo pull
-$ passgo
-├──asdf
-|  └──bb
-└──work
-   └──email
+$ passgo --help
 ```
 
-#### passgo clone git-url
-Clone a remote passgo git repository and set it as your local password store.
+All subcommands support the `--help` flag.
 
-```
-$ passgo clone https://github.com/ejcx/password-vault.git
-$ passgo
-├──asdf
-|  └──bb
-└──work
-   └──email
-```
-
-#### passgo usage
-Print basic usage information. `passgo help` is also an alias of `passgo usage`.
-
-#### passgo version
-Print basic version information.
 
 ## CRYPTOGRAPHY DETAILS
 ###### Password Store Initialization.

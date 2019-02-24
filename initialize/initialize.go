@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
+	"fmt"
 	"log"
 	"os"
 
@@ -62,6 +63,8 @@ func Init() {
 		err = os.Mkdir(passDir, 0700)
 		if err != nil {
 			log.Fatalf("Could not create passgo vault: %s", err.Error())
+		} else {
+			fmt.Printf("Created directory to store passwords: %s\n", passDir)
 		}
 	}
 	if fileDirExists, err := pio.PassFileDirExists(); err == nil {
@@ -170,4 +173,5 @@ func Init() {
 	if err = passConfig.SaveFile(); err != nil {
 		log.Fatalf("Could not write to config file: %s", err.Error())
 	}
+	fmt.Println("Password Vault successfully initialized")
 }
