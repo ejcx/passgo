@@ -72,7 +72,7 @@ Here we are adding mint.com to the password store within the money group.
 $ passgo insert money/budget.csv budget.csv
 ```
 
-Adding a file works almost the same as insert. Instead it has an extra argument. The file that you want to add to your vault is the final argument. Grouping works the same way with `insert-file` as `insert`.
+Adding a file works almost the same as insert. Instead it has an extra argument. The file that you want to add to your vault is the final argument. 
 
 
 ### Retrieving a password
@@ -178,8 +178,7 @@ The encryption and key computation are done using the `golang.org/x/crypto/nacl/
 
 After the site information is added, the site's generated private key is thrown away.
 
-###### Protecting Your Public Key.
-Syncing a plaintext public key that is used for encrypting new site data to a remote server is risky if the remote server is malicious. Because of this, an HMAC of your public key is calculated with a separate key than your symmetric master key, based on your master password and a separate 32 byte salt.
-
 ## Threat model
-The threat model of passgo assumes there are no attackers on your local machine. The passgo vault also protects itself from the remote git server by maintaining a keyed integrity hash of the password vault. The git server is unable to change site information, decrypt site information, or read passwords. Remote git servers can delete commits and changes without being detected when cloning or pulling a passwords vault. Fixing this is not possible by any password manager.
+The threat model of passgo assumes there are no attackers on your local machine. The passgo vault puts some level of trust in the remote git repository.
+
+An evil git server could modify the public key of your vault. If the evil git server does this then passgo will tell you that the Vault integrity cannot be verified the next time you attempt to read a password.

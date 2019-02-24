@@ -43,15 +43,15 @@ directory, and initialize your cryptographic keys.`,
 	}
 	initCmd = &cobra.Command{
 		Use:   "init",
-		Long:  "Initialize the .passgo directory, and generate your secret keys",
 		Short: "Initialize your passgo vault",
+		Long:  "Initialize the .passgo directory, and generate your secret keys",
 		Run: func(cmd *cobra.Command, args []string) {
 			initialize.Init()
 		},
 	}
 	insertCmd = &cobra.Command{
 		Use:     "insert",
-		Short:   "Insert in to your passgo vault",
+		Short:   "Insert a file or password in to your vault",
 		Example: "passgo insert money/bank.com",
 		Args:    cobra.RangeArgs(1, 2),
 		Long: `Add a site to your password store. This site can optionally be a part
