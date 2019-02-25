@@ -1,7 +1,7 @@
 # passgo
 stores, retrieves, generates, and synchronizes passwords and files securely and is written in Go! It is inspired by https://passwordstore.org but has a few key differences. The most important difference is passgo is not GPG based. Instead it uses a master password to securely store your passwords. It also supports encrypting arbitrary files.
 
-<img src="https://i.imgur.com/hFXVr4t.gif">
+<img style="max-width:400px" src="https://i.imgur.com/hFXVr4t.gif">
 
 passgo is meant to be secure enough that you can publicly post your vault. I've started publishing my passwords [here](https://github.com/ejcx/passwords.git).
 
