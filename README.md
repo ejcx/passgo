@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/ejcx/passgo.svg?branch=master)](https://travis-ci.org/ejcx/passgo)
 # passgo
 stores, retrieves, generates, and synchronizes passwords and files securely and is written in Go! It is inspired by https://passwordstore.org but has a few key differences. The most important difference is passgo is not GPG based. Instead it uses a master password to securely store your passwords. It also supports encrypting arbitrary files.
 
