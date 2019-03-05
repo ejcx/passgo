@@ -156,7 +156,7 @@ func GetConfigPath() (p string, err error) {
 	return
 }
 
-// GetFilesDir is used to get the directory that we store
+// GetEncryptedFilesDir is used to get the directory that we store
 // encrypted files in.
 func GetEncryptedFilesDir() (p string, err error) {
 	d, err := GetPassDir()
