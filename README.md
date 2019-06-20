@@ -5,13 +5,17 @@ stores, retrieves, generates, and synchronizes passwords and files securely and 
 
 passgo is meant to be secure enough that you can publicly post your vault. I've started publishing my passwords [here](https://github.com/ejcx/passwords.git).
 
-## Getting started with passgo
+## Installation
+
+`passgo` requires Go version 1.11 or later.
 
 ```bash
-go get -u github.com/ejcx/passgo
+(cd; GO111MODULE=on go install github.com/ejcx/passgo/v2)
 ```
 
-Next create a vault and specify the directory to store passwords in. You will be prompted for your master password:
+## Getting started with passgo
+
+Create a vault and specify the directory to store passwords in. You will be prompted for your master password:
 
 ```bash
 $ passgo init
