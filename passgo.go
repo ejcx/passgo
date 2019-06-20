@@ -155,6 +155,7 @@ func init() {
 	RootCmd.AddCommand(initCmd)
 	RootCmd.AddCommand(insertCmd)
 	RootCmd.AddCommand(removeCmd)
+	RootCmd.AddCommand(editCmd)
 	RootCmd.AddCommand(renameCmd)
 	RootCmd.AddCommand(showCmd)
 	RootCmd.AddCommand(versionCmd)
