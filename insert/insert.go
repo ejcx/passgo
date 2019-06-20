@@ -51,6 +51,9 @@ func Password(name string) {
 	}
 
 	passSealed, err := pc.SealAsym([]byte(sitePass), &masterPub, priv)
+	if err != nil {
+		log.Fatalf("Could not seal new site password: %s", err.Error())
+	}
 
 	si := pio.SiteInfo{
 		PubKey:     *pub,
