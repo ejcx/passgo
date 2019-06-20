@@ -245,10 +245,10 @@ func GetSiteFileBytes() (b []byte) {
 		log.Fatalf("Could not get pass dir: %s", err.Error())
 	}
 	f, err := os.OpenFile(si, os.O_RDWR, 0600)
-	defer f.Close()
 	if err != nil {
 		log.Fatalf("Could not open site file: %s", err.Error())
 	}
+	defer f.Close()
 	b, err = ioutil.ReadAll(f)
 	if err != nil {
 		log.Fatalf("Could not read site file: %s", err.Error())
