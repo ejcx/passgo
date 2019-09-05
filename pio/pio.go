@@ -327,9 +327,9 @@ func PromptPass(prompt string) (pass string, err error) {
 		}
 	}()
 
-	fmt.Printf("%s: ", prompt)
+	fmt.Fprintf(os.Stderr, "%s: ", prompt)
 	passBytes, err := terminal.ReadPassword(fd)
-	fmt.Println("")
+	fmt.Fprintln(os.Stderr, "")
 	return string(passBytes), err
 }
 
