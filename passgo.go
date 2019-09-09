@@ -2,19 +2,16 @@ package main
 
 import (
 	"fmt"
+	"runtime/debug"
 	"strconv"
 
-	"github.com/ejcx/passgo/edit"
-	"github.com/ejcx/passgo/generate"
-	"github.com/ejcx/passgo/initialize"
-	"github.com/ejcx/passgo/insert"
-	"github.com/ejcx/passgo/pio"
-	"github.com/ejcx/passgo/show"
+	"github.com/ejcx/passgo/v2/edit"
+	"github.com/ejcx/passgo/v2/generate"
+	"github.com/ejcx/passgo/v2/initialize"
+	"github.com/ejcx/passgo/v2/insert"
+	"github.com/ejcx/passgo/v2/pio"
+	"github.com/ejcx/passgo/v2/show"
 	"github.com/spf13/cobra"
-)
-
-const (
-	version = `v2.0`
 )
 
 var (
@@ -38,7 +35,12 @@ directory, and initialize your cryptographic keys.`,
 		Use:   "version",
 		Short: "Print the version of your passgo binary.",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println(version)
+			info, ok := debug.ReadBuildInfo()
+			if !ok {
+				fmt.Println("(unknown)")
+				return
+			}
+			fmt.Println(info.Main.Version)
 		},
 	}
 	initCmd = &cobra.Command{
