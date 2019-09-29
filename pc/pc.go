@@ -123,10 +123,16 @@ func Scrypt(pass, salt []byte) (key [32]byte, err error) {
 // GetMasterKey is used to prompt user's for their password, read the
 // user's passgo config file and decrypt the master private key.
 func GetMasterKey() (masterPrivKey [32]byte) {
-	pass, err := pio.PromptPass(pio.MasterPassPrompt)
+	// See if we saved password it locally
+	pass, err := pio.GetPassFromFile()
 	if err != nil {
-		log.Fatalf("Could not get master password: %s", err.Error())
+		// Ask user for password
+		pass, err = pio.PromptPass(pio.MasterPassPrompt)
+		if err != nil {
+			log.Fatalf("Could not get master password: %s", err.Error())
+		}
 	}
+
 	c, err := pio.GetConfigPath()
 	if err != nil {
 		log.Fatalf("Could not get config file: %s", err.Error())

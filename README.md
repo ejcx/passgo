@@ -36,6 +36,9 @@ The `PASSGODIR` environment variable specifies the directory that your vault is 
 
 I store my vault in the default location `~/.passgo`. All subcommands will respect this environment variable, including `init`
 
+Possible to store master password as a config file on local machine.
+Only do this if you have a secure local machine, see "Threat model" SECTION below.
+File to store password: `~/.config/passgo/passgo.pass`
 
 ## COMMANDS
 
@@ -64,10 +67,10 @@ By default, passgo will create your password vault in the `.passgo` directory wi
 ### Inserting a password
 ```
 $ passgo insert money/mint.com
-Enter password for money/mint.com: 
+Enter password for money/mint.com:
 ```
 
-Inserting a password in to your vault is easy. If you wish to group multiple entries together, it can be accomplished by prepending a group name followed by a slash to the pass-name. 
+Inserting a password in to your vault is easy. If you wish to group multiple entries together, it can be accomplished by prepending a group name followed by a slash to the pass-name.
 
 Here we are adding mint.com to the password store within the money group.
 
@@ -77,7 +80,7 @@ Here we are adding mint.com to the password store within the money group.
 $ passgo insert money/budget.csv budget.csv
 ```
 
-Adding a file works almost the same as insert. Instead it has an extra argument. The file that you want to add to your vault is the final argument. 
+Adding a file works almost the same as insert. Instead it has an extra argument. The file that you want to add to your vault is the final argument.
 
 
 ### Retrieving a password
@@ -89,7 +92,6 @@ dolladollabills$$1
 
 Show is used to display a password in standard out.
 
-	
 ### Rename a password
 ```
 $ passgo rename mney/mint.com
