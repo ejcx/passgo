@@ -56,9 +56,9 @@ func handleErrors(allErrors []error) {
 }
 
 // Find will search the vault for all occurences of frag in the site name.
-func Find(frag string) {
+func Find(frag string, listPlain bool) {
 	allSites, allErrors := SearchAll(Search, frag)
-	showResults(allSites)
+	showResults(allSites, listPlain)
 	handleErrors(allErrors)
 }
 
@@ -75,9 +75,9 @@ func Site(path string, copyPassword bool) {
 }
 
 // ListAll will print out all contents of the vault.
-func ListAll() {
+func ListAll(listPlain bool) {
 	allSites, allErrors := SearchAll(All, "")
-	showResults(allSites)
+	showResults(allSites, listPlain)
 	handleErrors(allErrors)
 }
 
@@ -123,7 +123,23 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, co
 	}
 }
 
-func showResults(allSites map[string][]pio.SiteInfo) {
+func showResults(allSites map[string][]pio.SiteInfo, listPlain bool) {
+	if listPlain {
+		showResultsPlain(allSites)
+	} else {
+		showResultsDefault(allSites)
+	}
+}
+
+func showResultsPlain(allSites map[string][]pio.SiteInfo) {
+	for group, siteList := range allSites {
+		for _, site := range siteList {
+			fmt.Printf("%s/%s\n", group, site.Name)
+		}
+	}
+}
+
+func showResultsDefault(allSites map[string][]pio.SiteInfo) {
 	fmt.Println(".")
 	counter := 1
 	for group, siteList := range allSites {
