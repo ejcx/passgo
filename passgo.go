@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	copyPass bool
-	RootCmd  = &cobra.Command{
+	copyPass, listPlain bool
+	RootCmd             = &cobra.Command{
 		Use:   "passgo",
 		Short: "Print the contents of the vault.",
 		Long: `Print the contents of the vault. If you have
@@ -25,7 +25,7 @@ the init subcommand in order to create your passgo
 directory, and initialize your cryptographic keys.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if exists, _ := pio.PassFileDirExists(); exists {
-				show.ListAll()
+				show.ListAll(listPlain)
 			} else {
 				cmd.Help()
 			}
@@ -113,7 +113,7 @@ one group or all sites that contain a certain word in the group or name`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			path := args[0]
-			show.Find(path)
+			show.Find(path, listPlain)
 		},
 	}
 	renameCmd = &cobra.Command{
@@ -152,6 +152,8 @@ one group or all sites that contain a certain word in the group or name`,
 
 func init() {
 	showCmd.PersistentFlags().BoolVarP(&copyPass, "copy", "c", false, "Copy your password to the clipboard")
+	RootCmd.PersistentFlags().BoolVarP(&listPlain, "plain", "p", false, "List sites in plain format")
+	findCmd.PersistentFlags().BoolVarP(&listPlain, "plain", "p", false, "List sites in plain format")
 	RootCmd.AddCommand(findCmd)
 	RootCmd.AddCommand(generateCmd)
 	RootCmd.AddCommand(initCmd)
