@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	saltLen     = 32
 	configFound = "A passgo config file was already found."
 )
 
