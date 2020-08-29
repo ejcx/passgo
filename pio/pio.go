@@ -313,18 +313,23 @@ func PromptPass(prompt string) (pass string, err error) {
 	fd := int(os.Stdin.Fd())
 	oldState, err := terminal.GetState(fd)
 	if err != nil {
-		panic("Could not get state of terminal: " + err.Error())
+		log.Fatalf("Count not get state of terminal: %v", err)
 	}
-	defer terminal.Restore(fd, oldState)
+	defer func() {
+		if err := terminal.Restore(fd, oldState); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	// Restore STDIN in the event of a signal interuption
 	sigch := make(chan os.Signal, 1)
 	signal.Notify(sigch, os.Interrupt)
 	go func() {
-		for _ = range sigch {
-			terminal.Restore(fd, oldState)
-			os.Exit(1)
+		<-sigch
+		if err := terminal.Restore(fd, oldState); err != nil {
+			log.Fatal(err)
 		}
+		os.Exit(1)
 	}()
 
 	fmt.Printf("%s: ", prompt)

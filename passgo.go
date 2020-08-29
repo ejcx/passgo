@@ -23,12 +23,12 @@ var (
 not yet initialized your vault, it is necessary to run
 the init subcommand in order to create your passgo
 directory, and initialize your cryptographic keys.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if exists, _ := pio.PassFileDirExists(); exists {
-				show.ListAll()
-			} else {
-				cmd.Help()
+				return show.ListAll()
 			}
+
+			return cmd.Help()
 		},
 	}
 	versionCmd = &cobra.Command{
@@ -164,5 +164,5 @@ func init() {
 }
 
 func main() {
-	RootCmd.Execute()
+	RootCmd.Execute() // nolint: errcheck
 }
