@@ -25,6 +25,11 @@ const (
 	SiteFileName = "sites.json"
 	// EncryptedFileDir is the name of the passgo encrypted file dir.
 	EncryptedFileDir = "files"
+	// LegacyDirectory is old directory of user data. It uses only if this folder exists in homedir and should
+	// be deprecated
+	LegacyDirectory = ".passgo"
+	// DefaultUserDataDir is modern directory of user data. It must be used in most of cases except legacy dir
+	DefaultUserDataDir = ".local/var/lib/passgo"
 )
 
 var (
@@ -140,10 +145,21 @@ func GetPassDir() (d string, err error) {
 	d, ok := os.LookupEnv(PASSGODIR)
 	if !ok {
 		home, err := GetHomeDir()
-		if err == nil {
-			d = filepath.Join(home, ".passgo")
+		if err != nil {
+			return "", err // FIXME: wrap error
 		}
+		d = filepath.Join(home, LegacyDirectory)
+		if fileExists(d) {
+			// sad, but user has legacy folder
+			goto DirectoryFound
+		}
+
+		// TODO: check more folders like current dir namespace, global namespace etc.
+
+		// if we are here, that's amazing: our uses doesn't have lagacy firectory!
+		d = filepath.Join(home, DefaultUserDataDir)
 	}
+DirectoryFound:
 	return
 }
 
@@ -345,4 +361,9 @@ func ToClipboard(s string) {
 	if err := clipboard.WriteAll(s); err != nil {
 		log.Fatalf("Could not copy password to clipboard: %s", err.Error())
 	}
+}
+
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil
 }
