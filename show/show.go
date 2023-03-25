@@ -117,7 +117,7 @@ func showPassword(allSites map[string][]pio.SiteInfo, masterPrivKey [32]byte, co
 			if copyPassword {
 				pio.ToClipboard(string(unsealed))
 			} else {
-				fmt.Println(string(unsealed))
+				fmt.Print(string(unsealed))
 			}
 		}
 	}
