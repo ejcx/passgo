@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"os/user"
 	"path/filepath"
+	"strings"
 
 	"github.com/atotto/clipboard"
 
@@ -307,6 +308,18 @@ func ReadConfig() (c ConfigFile, err error) {
 	return
 }
 
+// GetPassFromFile will get users password from ~/.config/passgo/passgo.pass if present.
+func GetPassFromFile() (pass string, err error) {
+	passwordFile := os.Getenv("HOME") + "/.config/passgo/passgo.pass"
+	content, err := ioutil.ReadFile(passwordFile)
+	if err != nil {
+		return "", err
+	} else {
+		fmt.Fprintf(os.Stderr, "Found and using password file, %s\n", passwordFile)
+		return strings.TrimSuffix(string(content), "\n"), nil
+	}
+}
+
 // PromptPass will prompt user's for a password by terminal.
 func PromptPass(prompt string) (pass string, err error) {
 	// Make a copy of STDIN's state to restore afterward
@@ -327,9 +340,9 @@ func PromptPass(prompt string) (pass string, err error) {
 		}
 	}()
 
-	fmt.Printf("%s: ", prompt)
+	fmt.Fprintf(os.Stderr, "%s: ", prompt)
 	passBytes, err := terminal.ReadPassword(fd)
-	fmt.Println("")
+	fmt.Fprintln(os.Stderr, "")
 	return string(passBytes), err
 }
 
